@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  /* Ruby Red */
+  --color-ruby-red-50: #fce9ea;
+  --color-ruby-red-100: #f9d2d5;
+  --color-ruby-red-200: #f3a5ac;
+  --color-ruby-red-300: #ed7882;
+  --color-ruby-red-400: #e74b58;
+  --color-ruby-red-500: #e01f2f;
+  --color-ruby-red-600: #b41825;
+  --color-ruby-red-700: #87121c;
+  --color-ruby-red-800: #5a0c13;
+  --color-ruby-red-900: #2d0609;
+  --color-ruby-red-950: #1f0407;
+
+  /* Snow */
+  --color-snow-50: #f8edef;
+  --color-snow-100: #f1dadf;
+  --color-snow-200: #e3b5be;
+  --color-snow-300: #d5909e;
+  --color-snow-400: #c76b7d;
+  --color-snow-500: #b9465d;
+  --color-snow-600: #94384a;
+  --color-snow-700: #6f2a38;
+  --color-snow-800: #4a1c25;
+  --color-snow-900: #250e13;
+  --color-snow-950: #1a0a0d;
+
+  /* Pale Slate */
+  --color-pale-slate-50: #f0f2f4;
+  --color-pale-slate-100: #e1e4ea;
+  --color-pale-slate-200: #c3c9d5;
+  --color-pale-slate-300: #a5afc0;
+  --color-pale-slate-400: #8894aa;
+  --color-pale-slate-500: #6a7995;
+  --color-pale-slate-600: #556177;
+  --color-pale-slate-700: #3f495a;
+  --color-pale-slate-800: #2a303c;
+  --color-pale-slate-900: #15181e;
+  --color-pale-slate-950: #0f1115;
+
+  /* Air Force Blue */
+  --color-air-force-blue-50: #eef4f6;
+  --color-air-force-blue-100: #dde8ee;
+  --color-air-force-blue-200: #bcd2dc;
+  --color-air-force-blue-300: #9abbcb;
+  --color-air-force-blue-400: #78a5ba;
+  --color-air-force-blue-500: #578ea8;
+  --color-air-force-blue-600: #457287;
+  --color-air-force-blue-700: #345565;
+  --color-air-force-blue-800: #233943;
+  --color-air-force-blue-900: #111c22;
+  --color-air-force-blue-950: #0c1418;
+
+  /* Sky Blue */
+  --color-sky-blue-50: #eaf3fa;
+  --color-sky-blue-100: #d5e8f6;
+  --color-sky-blue-200: #abd0ed;
+  --color-sky-blue-300: #82b9e3;
+  --color-sky-blue-400: #58a2da;
+  --color-sky-blue-500: #2e8ad1;
+  --color-sky-blue-600: #256fa7;
+  --color-sky-blue-700: #1c537d;
+  --color-sky-blue-800: #123754;
+  --color-sky-blue-900: #091c2a;
+  --color-sky-blue-950: #06131d;
+
+  /* Font */
+  --font-family-sans: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+body {
+  font-family: var(--font-family-sans);
+}
