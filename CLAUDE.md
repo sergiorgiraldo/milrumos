@@ -103,7 +103,7 @@ next.js and tailwind.css; database will be supabase
 --color-sky-blue-950: #06131d;
 
 2. Font-family Verdana medium
-3. No fancy stuff
+3. Professional style in the UI
 
 ## Authentication
 social login, no page can be accessed without login
