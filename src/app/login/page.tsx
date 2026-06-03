@@ -8,14 +8,15 @@ import { Suspense } from 'react';
 function LoginForm() {
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
+  const returnTo = searchParams.get('returnTo') ?? undefined;
   const supabase = createClient();
 
   async function handleGoogle() {
-    await signInWithGoogle(supabase);
+    await signInWithGoogle(supabase, returnTo);
   }
 
   async function handleGitHub() {
-    await signInWithGitHub(supabase);
+    await signInWithGitHub(supabase, returnTo);
   }
 
   return (

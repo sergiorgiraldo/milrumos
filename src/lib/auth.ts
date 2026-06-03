@@ -19,17 +19,21 @@ export async function upsertProfile(supabase: SupabaseClient, user: User) {
   return error;
 }
 
-export async function signInWithGoogle(supabase: SupabaseClient) {
+export async function signInWithGoogle(supabase: SupabaseClient, returnTo?: string) {
+  const base = `${getBaseUrl()}/auth/callback`;
+  const redirectTo = returnTo ? `${base}?next=${encodeURIComponent(returnTo)}` : base;
   return supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: `${getBaseUrl()}/auth/callback` },
+    options: { redirectTo },
   });
 }
 
-export async function signInWithGitHub(supabase: SupabaseClient) {
+export async function signInWithGitHub(supabase: SupabaseClient, returnTo?: string) {
+  const base = `${getBaseUrl()}/auth/callback`;
+  const redirectTo = returnTo ? `${base}?next=${encodeURIComponent(returnTo)}` : base;
   return supabase.auth.signInWithOAuth({
     provider: 'github',
-    options: { redirectTo: `${getBaseUrl()}/auth/callback` },
+    options: { redirectTo },
   });
 }
 
