@@ -1,6 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Piece, Section, PieceStatus } from './schema';
 
+export type PieceSummary = Piece & { section_count: number; word_count: number };
+
+export function countWords(text: string): number {
+  return text.replace(/[#*_`~[\]()>=-]/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+}
+
 export type PieceError = { code: 'NOT_FOUND' | 'FORBIDDEN' | 'DB_ERROR'; message: string };
 export type PieceResult<T> = { data: T; error: null } | { data: null; error: PieceError };
 
@@ -181,6 +187,39 @@ export async function deletePiece(
   }
 
   return { data: { deleted: true }, error: null };
+}
+
+export async function listAuthorPieces(
+  supabase: SupabaseClient,
+  authorId: string
+): Promise<PieceResult<PieceSummary[]>> {
+  const { data, error } = await supabase
+    .from('pieces')
+    .select('*, sections(content)')
+    .eq('author_id', authorId)
+    .order('updated_at', { ascending: false });
+
+  if (error) {
+    return { data: null, error: { code: 'DB_ERROR', message: error.message } };
+  }
+
+  const rows = (data ?? []) as Array<Piece & { sections?: Array<{ content: string }> }>;
+  return {
+    data: rows.map((row) => {
+      const secs = row.sections ?? [];
+      return {
+        id: row.id,
+        author_id: row.author_id,
+        title: row.title,
+        status: row.status,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        section_count: secs.length,
+        word_count: secs.reduce((sum, s) => sum + countWords(s.content), 0),
+      };
+    }),
+    error: null,
+  };
 }
 
 export async function getPublicPiece(
