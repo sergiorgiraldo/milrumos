@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
 import { marked } from 'marked';
 import type { Section, PieceMetadata, Profile } from '@/lib/schema';
+import { canFork } from '@/lib/fork';
+import ForkPanel from '@/components/ForkPanel';
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -64,6 +66,7 @@ export default async function PieceDetailPage({ params }: Props) {
     : '';
 
   const isOwner = p.author_id === user.id;
+  const forkEnabled = canFork(p.status as 'draft' | 'published', isOwner);
 
   return (
     <div className="min-h-screen bg-pale-slate-50">
@@ -131,21 +134,11 @@ export default async function PieceDetailPage({ params }: Props) {
         </header>
 
         {/* Sections */}
-        <div className="space-y-10">
-          {renderedSections.map((section) => (
-            <section key={section.id}>
-              {section.title && (
-                <h2 className="text-xl font-semibold text-pale-slate-800 mb-4">
-                  {section.title}
-                </h2>
-              )}
-              <div
-                className="prose prose-slate max-w-none text-pale-slate-700 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: section.html }}
-              />
-            </section>
-          ))}
-        </div>
+        <ForkPanel
+          sections={renderedSections}
+          pieceId={id}
+          showForkButtons={forkEnabled}
+        />
       </main>
     </div>
   );

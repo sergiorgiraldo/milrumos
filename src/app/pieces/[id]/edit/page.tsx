@@ -35,12 +35,31 @@ export default async function EditPage({ params }: Props) {
       content: s.content,
     }));
 
+  let inheritedCount = 0;
+  const { data: lineage } = await supabase
+    .from('piece_lineage')
+    .select('fork_section_id')
+    .eq('piece_id', id)
+    .maybeSingle();
+
+  if (lineage?.fork_section_id) {
+    const { data: forkSec } = await supabase
+      .from('sections')
+      .select('ordinal')
+      .eq('id', lineage.fork_section_id)
+      .single();
+    if (forkSec) {
+      inheritedCount = (forkSec as { ordinal: number }).ordinal;
+    }
+  }
+
   return (
     <PieceEditor
       pieceId={id}
       initialTitle={p.title}
       initialSections={sections}
       initialStatus={p.status}
+      inheritedCount={inheritedCount}
     />
   );
 }

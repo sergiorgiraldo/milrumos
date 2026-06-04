@@ -12,19 +12,21 @@ import {
   sectionsWordCount,
   countWords,
 } from '@/lib/editor';
+import { isInheritedSection } from '@/lib/fork';
 
 interface Props {
   pieceId: string;
   initialTitle: string;
   initialSections: SectionData[];
   initialStatus: 'draft' | 'published';
+  inheritedCount?: number;
 }
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 const AUTOSAVE_DELAY = 1500;
 
-export default function PieceEditor({ pieceId, initialTitle, initialSections, initialStatus }: Props) {
+export default function PieceEditor({ pieceId, initialTitle, initialSections, initialStatus, inheritedCount = 0 }: Props) {
   const [title, setTitle] = useState(initialTitle);
   const [sections, setSections] = useState<SectionData[]>(
     initialSections.length > 0
@@ -221,78 +223,102 @@ export default function PieceEditor({ pieceId, initialTitle, initialSections, in
 
       {/* Editor body */}
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-8 space-y-6">
-        {sections.map((section, index) => (
-          <div
-            key={`${section.ordinal}-${index}`}
-            className="bg-white rounded-xl shadow-sm border border-pale-slate-200"
-          >
-            {/* Section header */}
-            <div className="flex items-center gap-2 px-4 pt-3 pb-2 border-b border-pale-slate-100">
-              <div className="flex flex-col gap-0.5">
-                <button
-                  onClick={() => handleMoveUp(index)}
-                  disabled={index === 0}
-                  aria-label="Move section up"
-                  className="text-pale-slate-400 hover:text-pale-slate-600 disabled:opacity-30 text-xs leading-none"
-                >
-                  ▲
-                </button>
-                <button
-                  onClick={() => handleMoveDown(index)}
-                  disabled={index === sections.length - 1}
-                  aria-label="Move section down"
-                  className="text-pale-slate-400 hover:text-pale-slate-600 disabled:opacity-30 text-xs leading-none"
-                >
-                  ▼
-                </button>
-              </div>
+        {sections.map((section, index) => {
+          const inherited = isInheritedSection(section.ordinal, inheritedCount);
 
-              <div className="flex-1 min-w-0">
-                {editingTitleIndex === index ? (
-                  <input
-                    autoFocus
-                    defaultValue={section.title ?? ''}
-                    onBlur={(e) => handleRename(index, e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleRename(index, (e.target as HTMLInputElement).value);
-                      if (e.key === 'Escape') setEditingTitleIndex(null);
-                    }}
-                    className="w-full text-sm font-medium text-pale-slate-700 border-b border-air-force-blue-400 focus:outline-none bg-transparent"
-                    aria-label="Section title"
-                  />
-                ) : (
+          return (
+            <div
+              key={`${section.ordinal}-${index}`}
+              className={`rounded-xl shadow-sm border ${
+                inherited
+                  ? 'bg-pale-slate-50 border-pale-slate-200 opacity-80'
+                  : 'bg-white border-pale-slate-200'
+              }`}
+            >
+              {/* Section header */}
+              <div className="flex items-center gap-2 px-4 pt-3 pb-2 border-b border-pale-slate-100">
+                {!inherited && (
+                  <div className="flex flex-col gap-0.5">
+                    <button
+                      onClick={() => handleMoveUp(index)}
+                      disabled={index === 0}
+                      aria-label="Move section up"
+                      className="text-pale-slate-400 hover:text-pale-slate-600 disabled:opacity-30 text-xs leading-none"
+                    >
+                      ▲
+                    </button>
+                    <button
+                      onClick={() => handleMoveDown(index)}
+                      disabled={index === sections.length - 1}
+                      aria-label="Move section down"
+                      className="text-pale-slate-400 hover:text-pale-slate-600 disabled:opacity-30 text-xs leading-none"
+                    >
+                      ▼
+                    </button>
+                  </div>
+                )}
+
+                {inherited && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-pale-slate-200 text-pale-slate-500 font-medium shrink-0">
+                    Inherited
+                  </span>
+                )}
+
+                <div className="flex-1 min-w-0">
+                  {!inherited && editingTitleIndex === index ? (
+                    <input
+                      autoFocus
+                      defaultValue={section.title ?? ''}
+                      onBlur={(e) => handleRename(index, e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleRename(index, (e.target as HTMLInputElement).value);
+                        if (e.key === 'Escape') setEditingTitleIndex(null);
+                      }}
+                      className="w-full text-sm font-medium text-pale-slate-700 border-b border-air-force-blue-400 focus:outline-none bg-transparent"
+                      aria-label="Section title"
+                    />
+                  ) : (
+                    <button
+                      onClick={() => !inherited && setEditingTitleIndex(index)}
+                      disabled={inherited}
+                      className="text-sm font-medium text-pale-slate-600 hover:text-pale-slate-800 truncate max-w-full text-left disabled:cursor-default"
+                      aria-label={`Section ${index + 1} title`}
+                    >
+                      {section.title ?? `Section ${index + 1}`}
+                    </button>
+                  )}
+                </div>
+
+                <span className="text-xs text-pale-slate-400 shrink-0">
+                  {countWords(section.content)} words
+                </span>
+
+                {!inherited && (
                   <button
-                    onClick={() => setEditingTitleIndex(index)}
-                    className="text-sm font-medium text-pale-slate-600 hover:text-pale-slate-800 truncate max-w-full text-left"
-                    aria-label={`Rename section ${index + 1}`}
+                    onClick={() => handleDeleteSection(index)}
+                    disabled={sections.length === 1}
+                    aria-label="Delete section"
+                    className="text-pale-slate-300 hover:text-ruby-red-500 disabled:opacity-30 text-sm ml-1"
                   >
-                    {section.title ?? `Section ${index + 1}`}
+                    ✕
                   </button>
                 )}
               </div>
 
-              <span className="text-xs text-pale-slate-400 shrink-0">
-                {countWords(section.content)} words
-              </span>
-
-              <button
-                onClick={() => handleDeleteSection(index)}
-                disabled={sections.length === 1}
-                aria-label="Delete section"
-                className="text-pale-slate-300 hover:text-ruby-red-500 disabled:opacity-30 text-sm ml-1"
-              >
-                ✕
-              </button>
+              {inherited ? (
+                <div className="px-4 py-4 text-pale-slate-500 text-sm whitespace-pre-wrap leading-relaxed select-none">
+                  {section.content || <span className="italic text-pale-slate-400">Empty section</span>}
+                </div>
+              ) : (
+                <SectionEditor
+                  initialContent={section.content}
+                  onChange={(md) => handleContentChange(index, md)}
+                  placeholder={`Write section ${index + 1}…`}
+                />
+              )}
             </div>
-
-            {/* TipTap editor */}
-            <SectionEditor
-              initialContent={section.content}
-              onChange={(md) => handleContentChange(index, md)}
-              placeholder={`Write section ${index + 1}…`}
-            />
-          </div>
-        ))}
+          );
+        })}
 
         <button
           onClick={handleAddSection}
