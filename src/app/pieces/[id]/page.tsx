@@ -4,6 +4,8 @@ import { marked } from 'marked';
 import type { Section, PieceMetadata, Profile } from '@/lib/schema';
 import { canFork } from '@/lib/fork';
 import ForkPanel from '@/components/ForkPanel';
+import LineageBanner from '@/components/LineageBanner';
+import { getLineage } from '@/lib/lineage';
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -28,7 +30,7 @@ export default async function PieceDetailPage({ params }: Props) {
 
   if (p.status === 'draft' && p.author_id !== user.id) notFound();
 
-  const [{ data: metadata }, { data: authorProfile }] = await Promise.all([
+  const [{ data: metadata }, { data: authorProfile }, lineage] = await Promise.all([
     supabase
       .from('piece_metadata')
       .select('genre, tags')
@@ -39,6 +41,7 @@ export default async function PieceDetailPage({ params }: Props) {
       .select('display_name, username, avatar_url')
       .eq('id', p.author_id)
       .single(),
+    getLineage(supabase, id),
   ]);
 
   const meta = metadata as Pick<PieceMetadata, 'genre' | 'tags'> | null;
@@ -86,6 +89,8 @@ export default async function PieceDetailPage({ params }: Props) {
       </nav>
 
       <main className="max-w-3xl mx-auto px-4 py-10">
+        <LineageBanner lineage={lineage} />
+
         {/* Header */}
         <header className="mb-10">
           <div className="flex items-center gap-2 mb-3">
