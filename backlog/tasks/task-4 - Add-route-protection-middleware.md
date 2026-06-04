@@ -1,9 +1,10 @@
 ---
 id: TASK-4
 title: Add route protection middleware
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-06-02 06:20'
+updated_date: '2026-06-03 16:52'
 labels:
   - auth
   - frontend
@@ -22,9 +23,9 @@ Ensure every page in the app (except the login/landing page) requires an authent
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Visiting any protected route without a session redirects to /login
-- [ ] #2 After login, user is redirected to the originally requested URL
-- [ ] #3 Login page itself is accessible without a session
-- [ ] #4 Middleware does not block static assets or API routes that are intentionally public
-- [ ] #5 Unit test: middleware redirects unauthenticated request to /login
+- [x] #1 Visiting any protected route without a session redirects to /login
+- [x] #2 After login, user is redirected to the originally requested URL
+- [x] #3 Login page itself is accessible without a session
+- [x] #4 Middleware does not block static assets or API routes that are intentionally public
+- [x] #5 Unit test: middleware redirects unauthenticated request to /login
 <!-- AC:END -->
