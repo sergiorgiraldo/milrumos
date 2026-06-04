@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import LogoutButton from './LogoutButton';
+import NewPieceButton from '@/components/NewPieceButton';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -40,6 +41,10 @@ export default async function Home() {
         <p className="text-pale-slate-500 text-sm mb-8">
           Collaborative writing. Branch from any point. Build on each other.
         </p>
+
+        <div className="flex justify-center mb-6">
+          <NewPieceButton />
+        </div>
 
         <div className="flex gap-3 justify-center flex-wrap">
           <span className="px-4 py-2 rounded-full bg-ruby-red-100 text-ruby-red-700 text-sm font-medium">

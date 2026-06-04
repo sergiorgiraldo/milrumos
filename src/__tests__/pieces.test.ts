@@ -1,4 +1,4 @@
-import { createPiece, updatePiece, savePiece, deletePiece, setStatus } from '@/lib/pieces';
+import { createPiece, updatePiece, savePiece, deletePiece, setStatus, getPublicPiece } from '@/lib/pieces';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const AUTHOR_ID = 'author-1';
@@ -248,5 +248,63 @@ describe('savePiece', () => {
     const result = await savePiece(supabase, PIECE_ID, AUTHOR_ID, []);
 
     expect(result.error?.code).toBe('DB_ERROR');
+  });
+});
+
+// ---- getPublicPiece (draft/publish authorization) --------------------------------
+
+describe('getPublicPiece', () => {
+  const piece = {
+    id: PIECE_ID,
+    author_id: AUTHOR_ID,
+    title: 'Story',
+    status: 'published',
+    created_at: '',
+    updated_at: '',
+    sections: [],
+  };
+
+  it('returns published piece to any authenticated user', async () => {
+    const supabase = makeClient(
+      makeChain({ data: { ...piece, sections: [] }, error: null })
+    );
+
+    const result = await getPublicPiece(supabase, PIECE_ID, OTHER_ID);
+
+    expect(result.error).toBeNull();
+    expect(result.data?.id).toBe(PIECE_ID);
+  });
+
+  it('returns draft piece to its owner', async () => {
+    const supabase = makeClient(
+      makeChain({ data: { ...piece, status: 'draft', sections: [] }, error: null })
+    );
+
+    const result = await getPublicPiece(supabase, PIECE_ID, AUTHOR_ID);
+
+    expect(result.error).toBeNull();
+    expect(result.data?.status).toBe('draft');
+  });
+
+  it('returns NOT_FOUND for draft piece viewed by non-owner', async () => {
+    const supabase = makeClient(
+      makeChain({ data: { ...piece, status: 'draft', sections: [] }, error: null })
+    );
+
+    const result = await getPublicPiece(supabase, PIECE_ID, OTHER_ID);
+
+    expect(result.data).toBeNull();
+    expect(result.error?.code).toBe('NOT_FOUND');
+  });
+
+  it('returns NOT_FOUND when piece does not exist', async () => {
+    const supabase = makeClient(
+      makeChain({ data: null, error: { message: 'not found' } })
+    );
+
+    const result = await getPublicPiece(supabase, 'no-such-id', OTHER_ID);
+
+    expect(result.data).toBeNull();
+    expect(result.error?.code).toBe('NOT_FOUND');
   });
 });

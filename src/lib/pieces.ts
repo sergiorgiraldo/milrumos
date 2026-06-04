@@ -183,6 +183,21 @@ export async function deletePiece(
   return { data: { deleted: true }, error: null };
 }
 
+export async function getPublicPiece(
+  supabase: SupabaseClient,
+  pieceId: string,
+  requesterId: string
+): Promise<PieceResult<Piece & { sections: Section[] }>> {
+  const result = await getPiece(supabase, pieceId);
+  if (result.error) return result;
+
+  if (result.data.status === 'draft' && result.data.author_id !== requesterId) {
+    return { data: null, error: { code: 'NOT_FOUND', message: 'piece not found' } };
+  }
+
+  return result;
+}
+
 export async function setStatus(
   supabase: SupabaseClient,
   pieceId: string,

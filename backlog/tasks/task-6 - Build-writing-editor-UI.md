@@ -1,10 +1,10 @@
 ---
 id: TASK-6
 title: Build writing editor UI
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-06-02 06:21'
-updated_date: '2026-06-02 06:57'
+updated_date: '2026-06-04 10:12'
 labels:
   - frontend
   - editor
@@ -12,6 +12,14 @@ milestone: m-1
 dependencies:
   - TASK-1
   - TASK-5
+modified_files:
+  - src/lib/editor.ts
+  - src/components/SectionEditor.tsx
+  - src/components/PieceEditor.tsx
+  - src/components/NewPieceButton.tsx
+  - 'src/app/pieces/[id]/edit/page.tsx'
+  - src/app/page.tsx
+  - src/__tests__/editor.test.ts
 priority: high
 ordinal: 2000
 ---
@@ -26,13 +34,19 @@ Choose a WYSIWYG markdown library compatible with Next.js (e.g. Milkdown, TipTap
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Author can create a new piece from the dashboard
-- [ ] #2 Editor renders markdown as formatted prose (bold, italic, headings, lists, blockquotes) while the author types — not raw syntax
-- [ ] #3 Underlying storage format is markdown text (round-trips cleanly through parse→serialize)
-- [ ] #4 Editor shows a list of sections; each section has a title and a WYSIWYG body
-- [ ] #5 Author can add a new section, reorder sections, rename a section, and delete a section
-- [ ] #6 Content auto-saves to draft state without a manual save button (debounced), triggering a version snapshot via TASK-5 API
-- [ ] #7 Word count is displayed per section and for the whole piece
-- [ ] #8 Editor is accessible via keyboard (tab-focusable controls)
-- [ ] #9 Unit tests cover section add, reorder, delete, markdown round-trip, and auto-save trigger logic
+- [x] #1 Author can create a new piece from the dashboard
+- [x] #2 Editor renders markdown as formatted prose (bold, italic, headings, lists, blockquotes) while the author types — not raw syntax
+- [x] #3 Underlying storage format is markdown text (round-trips cleanly through parse→serialize)
+- [x] #4 Editor shows a list of sections; each section has a title and a WYSIWYG body
+- [x] #5 Author can add a new section, reorder sections, rename a section, and delete a section
+- [x] #6 Content auto-saves to draft state without a manual save button (debounced), triggering a version snapshot via TASK-5 API
+- [x] #7 Word count is displayed per section and for the whole piece
+- [x] #8 Editor is accessible via keyboard (tab-focusable controls)
+- [x] #9 Unit tests cover section add, reorder, delete, markdown round-trip, and auto-save trigger logic
 <!-- AC:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+WYSIWYG markdown editor built with TipTap v3 + tiptap-markdown. Multi-section structure with add/reorder/delete/rename. Debounced auto-save to /api/pieces/[id]/save. Word count per section + total. Keyboard accessible via button elements. Publish/unpublish in toolbar. 108 tests pass including all editor pure-function tests.
+<!-- SECTION:FINAL_SUMMARY:END -->
