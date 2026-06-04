@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { listAuthorPieces } from '@/lib/pieces';
+import { upsertProfile } from '@/lib/auth';
 import LogoutButton from './LogoutButton';
 import NewPieceButton from '@/components/NewPieceButton';
 import DashboardTable from '@/components/DashboardTable';
@@ -12,6 +13,8 @@ export default async function Home() {
   } = await supabase.auth.getUser();
 
   if (!user) redirect('/login');
+
+  await upsertProfile(supabase, user);
 
   const [{ data: profile }, { data: pieces }] = await Promise.all([
     supabase

@@ -25,7 +25,8 @@ export async function POST(request: Request) {
   const result = await createPiece(supabase, user.id, body);
 
   if (result.error) {
-    return NextResponse.json({ error: result.error.message }, { status: 400 });
+    console.error('[POST /api/pieces]', result.error);
+    return NextResponse.json({ error: result.error.message, code: result.error.code }, { status: 400 });
   }
 
   return NextResponse.json(result.data, { status: 201 });

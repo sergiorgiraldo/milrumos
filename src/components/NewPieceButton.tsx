@@ -8,10 +8,12 @@ export default function NewPieceButton() {
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const handleCreate = async () => {
     if (!title.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch('/api/pieces', {
         method: 'POST',
@@ -21,7 +23,12 @@ export default function NewPieceButton() {
       if (res.ok) {
         const piece = await res.json();
         router.push(`/pieces/${piece.id}/edit`);
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error ?? `Error ${res.status}`);
       }
+    } catch {
+      setError('Network error');
     } finally {
       setLoading(false);
     }
@@ -40,6 +47,9 @@ export default function NewPieceButton() {
 
   return (
     <div className="flex flex-col gap-3 w-full max-w-sm">
+      {error && (
+        <p className="text-ruby-red-600 text-sm">{error}</p>
+      )}
       <input
         autoFocus
         value={title}
