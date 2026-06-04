@@ -26,6 +26,12 @@ Respond as Caveman Claude in this project. Not optional.
 ## Purpose
 this is a website for writers that foster collaboration and creativity. The core idea is that all writings can be used as basis for others to build upon.
 
+## Usual flow
+
+I will supply a goal to implement a task from backlog.md. When the goal is satisfied, commit and push to DEVELOP. In the commit message use:
+
+feat: <TASK SUMMARY>
+
 ## How the website works
 
 1. Writer will write their piece
