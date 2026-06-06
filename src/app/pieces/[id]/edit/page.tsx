@@ -53,6 +53,20 @@ export default async function EditPage({ params }: Props) {
     }
   }
 
+  const { data: metadataRow } = await supabase
+    .from('piece_metadata')
+    .select('genre, tags, idea_summary')
+    .eq('piece_id', id)
+    .maybeSingle();
+
+  const initialMetadata = metadataRow
+    ? {
+        genre: (metadataRow as { genre: string | null }).genre ?? null,
+        tags: (metadataRow as { tags: string[] }).tags ?? [],
+        idea_summary: (metadataRow as { idea_summary: string | null }).idea_summary ?? null,
+      }
+    : { genre: null, tags: [], idea_summary: null };
+
   return (
     <PieceEditor
       pieceId={id}
@@ -60,6 +74,7 @@ export default async function EditPage({ params }: Props) {
       initialSections={sections}
       initialStatus={p.status}
       inheritedCount={inheritedCount}
+      initialMetadata={initialMetadata}
     />
   );
 }

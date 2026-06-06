@@ -5,6 +5,7 @@ import { upsertProfile } from '@/lib/auth';
 import LogoutButton from './LogoutButton';
 import NewPieceButton from '@/components/NewPieceButton';
 import DashboardTable from '@/components/DashboardTable';
+import NavBar from '@/components/NavBar';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -29,10 +30,9 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-pale-slate-50">
-      <header className="bg-white border-b border-pale-slate-200 shadow-sm">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-ruby-red-600">Milrumos</h1>
-          <div className="flex items-center gap-4">
+      <NavBar
+        rightContent={
+          <>
             {profile?.avatar_url && (
               <img
                 src={profile.avatar_url}
@@ -42,9 +42,9 @@ export default async function Home() {
             )}
             <span className="text-pale-slate-700 text-sm font-medium">{displayName}</span>
             <LogoutButton />
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <main className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">

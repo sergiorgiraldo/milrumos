@@ -5,6 +5,7 @@ import type { Section, PieceMetadata, Profile } from '@/lib/schema';
 import { canFork } from '@/lib/fork';
 import ForkPanel from '@/components/ForkPanel';
 import LineageBanner from '@/components/LineageBanner';
+import NavBar from '@/components/NavBar';
 import { getLineage } from '@/lib/lineage';
 
 type Props = { params: Promise<{ id: string }> };
@@ -33,7 +34,7 @@ export default async function PieceDetailPage({ params }: Props) {
   const [{ data: metadata }, { data: authorProfile }, lineage] = await Promise.all([
     supabase
       .from('piece_metadata')
-      .select('genre, tags')
+      .select('genre, tags, idea_summary')
       .eq('piece_id', id)
       .maybeSingle(),
     supabase
@@ -44,7 +45,7 @@ export default async function PieceDetailPage({ params }: Props) {
     getLineage(supabase, id),
   ]);
 
-  const meta = metadata as Pick<PieceMetadata, 'genre' | 'tags'> | null;
+  const meta = metadata as Pick<PieceMetadata, 'genre' | 'tags' | 'idea_summary'> | null;
   const author = authorProfile as Pick<Profile, 'display_name' | 'username' | 'avatar_url'> | null;
   const authorName = author?.display_name ?? author?.username ?? 'Unknown Author';
 
@@ -73,20 +74,18 @@ export default async function PieceDetailPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-pale-slate-50">
-      {/* Nav */}
-      <nav className="sticky top-0 z-10 bg-white border-b border-pale-slate-200 px-6 py-3 flex items-center justify-between">
-        <a href="/" className="text-ruby-red-600 font-bold text-lg hover:text-ruby-red-700">
-          Milrumos
-        </a>
-        {isOwner && (
-          <a
-            href={`/pieces/${id}/edit`}
-            className="px-4 py-1.5 rounded-lg bg-pale-slate-100 text-pale-slate-700 text-sm font-medium hover:bg-pale-slate-200 transition-colors"
-          >
-            Edit
-          </a>
-        )}
-      </nav>
+      <NavBar
+        rightContent={
+          isOwner ? (
+            <a
+              href={`/pieces/${id}/edit`}
+              className="px-4 py-1.5 rounded-lg bg-pale-slate-100 text-pale-slate-700 text-sm font-medium hover:bg-pale-slate-200 transition-colors"
+            >
+              Edit
+            </a>
+          ) : undefined
+        }
+      />
 
       <main className="max-w-3xl mx-auto px-4 py-10">
         <LineageBanner lineage={lineage} />
@@ -135,6 +134,12 @@ export default async function PieceDetailPage({ params }: Props) {
                 </span>
               ))}
             </div>
+          )}
+
+          {meta?.idea_summary && (
+            <p className="mt-4 text-sm text-pale-slate-600 leading-relaxed border-l-2 border-pale-slate-300 pl-3 italic">
+              {meta.idea_summary}
+            </p>
           )}
         </header>
 

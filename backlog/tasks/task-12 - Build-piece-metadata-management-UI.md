@@ -1,9 +1,10 @@
 ---
 id: TASK-12
 title: Build piece metadata management UI
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-06-02 06:21'
+updated_date: '2026-06-06 13:32'
 labels:
   - frontend
   - metadata

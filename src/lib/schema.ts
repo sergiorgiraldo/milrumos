@@ -61,11 +61,26 @@ export interface PieceLineage {
   created_at: string;
 }
 
+export const GENRES = [
+  'Fiction',
+  'Non-fiction',
+  'Poetry',
+  'Essay',
+  'Fantasy',
+  'Sci-Fi',
+  'Horror',
+  'Romance',
+  'Other',
+] as const;
+
+export type Genre = (typeof GENRES)[number];
+
 export interface PieceMetadata {
   id: string;
   piece_id: string;
   genre: string | null;
   tags: string[];
+  idea_summary: string | null;
   updated_at: string;
 }
 
