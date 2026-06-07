@@ -2,6 +2,11 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
 import { marked } from 'marked';
 import type { Section, PieceMetadata, Profile } from '@/lib/schema';
+import { canFork } from '@/lib/fork';
+import ForkPanel from '@/components/ForkPanel';
+import LineageBanner from '@/components/LineageBanner';
+import NavBar from '@/components/NavBar';
+import { getLineage } from '@/lib/lineage';
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -26,10 +31,10 @@ export default async function PieceDetailPage({ params }: Props) {
 
   if (p.status === 'draft' && p.author_id !== user.id) notFound();
 
-  const [{ data: metadata }, { data: authorProfile }] = await Promise.all([
+  const [{ data: metadata }, { data: authorProfile }, lineage] = await Promise.all([
     supabase
       .from('piece_metadata')
-      .select('genre, tags')
+      .select('genre, tags, idea_summary')
       .eq('piece_id', id)
       .maybeSingle(),
     supabase
@@ -37,9 +42,10 @@ export default async function PieceDetailPage({ params }: Props) {
       .select('display_name, username, avatar_url')
       .eq('id', p.author_id)
       .single(),
+    getLineage(supabase, id),
   ]);
 
-  const meta = metadata as Pick<PieceMetadata, 'genre' | 'tags'> | null;
+  const meta = metadata as Pick<PieceMetadata, 'genre' | 'tags' | 'idea_summary'> | null;
   const author = authorProfile as Pick<Profile, 'display_name' | 'username' | 'avatar_url'> | null;
   const authorName = author?.display_name ?? author?.username ?? 'Unknown Author';
 
@@ -64,25 +70,26 @@ export default async function PieceDetailPage({ params }: Props) {
     : '';
 
   const isOwner = p.author_id === user.id;
+  const forkEnabled = canFork(p.status as 'draft' | 'published', isOwner);
 
   return (
     <div className="min-h-screen bg-pale-slate-50">
-      {/* Nav */}
-      <nav className="sticky top-0 z-10 bg-white border-b border-pale-slate-200 px-6 py-3 flex items-center justify-between">
-        <a href="/" className="text-ruby-red-600 font-bold text-lg hover:text-ruby-red-700">
-          Milrumos
-        </a>
-        {isOwner && (
-          <a
-            href={`/pieces/${id}/edit`}
-            className="px-4 py-1.5 rounded-lg bg-pale-slate-100 text-pale-slate-700 text-sm font-medium hover:bg-pale-slate-200 transition-colors"
-          >
-            Edit
-          </a>
-        )}
-      </nav>
+      <NavBar
+        rightContent={
+          isOwner ? (
+            <a
+              href={`/pieces/${id}/edit`}
+              className="px-4 py-1.5 rounded-lg bg-pale-slate-100 text-pale-slate-700 text-sm font-medium hover:bg-pale-slate-200 transition-colors"
+            >
+              Edit
+            </a>
+          ) : undefined
+        }
+      />
 
       <main className="max-w-3xl mx-auto px-4 py-10">
+        <LineageBanner lineage={lineage} />
+
         {/* Header */}
         <header className="mb-10">
           <div className="flex items-center gap-2 mb-3">
@@ -128,24 +135,20 @@ export default async function PieceDetailPage({ params }: Props) {
               ))}
             </div>
           )}
+
+          {meta?.idea_summary && (
+            <p className="mt-4 text-sm text-pale-slate-600 leading-relaxed border-l-2 border-pale-slate-300 pl-3 italic">
+              {meta.idea_summary}
+            </p>
+          )}
         </header>
 
         {/* Sections */}
-        <div className="space-y-10">
-          {renderedSections.map((section) => (
-            <section key={section.id}>
-              {section.title && (
-                <h2 className="text-xl font-semibold text-pale-slate-800 mb-4">
-                  {section.title}
-                </h2>
-              )}
-              <div
-                className="prose prose-slate max-w-none text-pale-slate-700 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: section.html }}
-              />
-            </section>
-          ))}
-        </div>
+        <ForkPanel
+          sections={renderedSections}
+          pieceId={id}
+          showForkButtons={forkEnabled}
+        />
       </main>
     </div>
   );

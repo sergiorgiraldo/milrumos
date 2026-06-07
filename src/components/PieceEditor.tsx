@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import SectionEditor from './SectionEditor';
+import MetadataPanel from './MetadataPanel';
 import {
   SectionData,
   addSection,
@@ -12,19 +13,35 @@ import {
   sectionsWordCount,
   countWords,
 } from '@/lib/editor';
+import { isInheritedSection } from '@/lib/fork';
+
+interface InitialMetadata {
+  genre: string | null;
+  tags: string[];
+  idea_summary: string | null;
+}
 
 interface Props {
   pieceId: string;
   initialTitle: string;
   initialSections: SectionData[];
   initialStatus: 'draft' | 'published';
+  inheritedCount?: number;
+  initialMetadata?: InitialMetadata;
 }
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 const AUTOSAVE_DELAY = 1500;
 
-export default function PieceEditor({ pieceId, initialTitle, initialSections, initialStatus }: Props) {
+export default function PieceEditor({
+  pieceId,
+  initialTitle,
+  initialSections,
+  initialStatus,
+  inheritedCount = 0,
+  initialMetadata,
+}: Props) {
   const [title, setTitle] = useState(initialTitle);
   const [sections, setSections] = useState<SectionData[]>(
     initialSections.length > 0
@@ -35,9 +52,24 @@ export default function PieceEditor({ pieceId, initialTitle, initialSections, in
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [publishing, setPublishing] = useState(false);
   const [editingTitleIndex, setEditingTitleIndex] = useState<number | null>(null);
+  const [showMetadata, setShowMetadata] = useState(false);
+
+  // Metadata state
+  const [genre, setGenre] = useState<string | null>(initialMetadata?.genre ?? null);
+  const [tags, setTags] = useState<string[]>(initialMetadata?.tags ?? []);
+  const [ideaSummary, setIdeaSummary] = useState<string | null>(initialMetadata?.idea_summary ?? null);
 
   const sectionsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const titleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const metadataTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Keep refs for latest metadata values to use in debounced callback
+  const genreRef = useRef(genre);
+  const tagsRef = useRef(tags);
+  const summaryRef = useRef(ideaSummary);
+  useEffect(() => { genreRef.current = genre; }, [genre]);
+  useEffect(() => { tagsRef.current = tags; }, [tags]);
+  useEffect(() => { summaryRef.current = ideaSummary; }, [ideaSummary]);
 
   const saveTitle = useCallback(
     async (nextTitle: string) => {
@@ -68,6 +100,18 @@ export default function PieceEditor({ pieceId, initialTitle, initialSections, in
     [pieceId]
   );
 
+  const saveMetadata = useCallback(async () => {
+    await fetch(`/api/pieces/${pieceId}/metadata`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        genre: genreRef.current,
+        tags: tagsRef.current,
+        idea_summary: summaryRef.current,
+      }),
+    });
+  }, [pieceId]);
+
   const scheduleSectionsSave = useCallback(
     (current: SectionData[]) => {
       if (sectionsTimerRef.current) clearTimeout(sectionsTimerRef.current);
@@ -84,10 +128,16 @@ export default function PieceEditor({ pieceId, initialTitle, initialSections, in
     [saveTitle]
   );
 
+  const scheduleMetadataSave = useCallback(() => {
+    if (metadataTimerRef.current) clearTimeout(metadataTimerRef.current);
+    metadataTimerRef.current = setTimeout(() => saveMetadata(), AUTOSAVE_DELAY);
+  }, [saveMetadata]);
+
   useEffect(() => {
     return () => {
       if (sectionsTimerRef.current) clearTimeout(sectionsTimerRef.current);
       if (titleTimerRef.current) clearTimeout(titleTimerRef.current);
+      if (metadataTimerRef.current) clearTimeout(metadataTimerRef.current);
     };
   }, []);
 
@@ -148,6 +198,21 @@ export default function PieceEditor({ pieceId, initialTitle, initialSections, in
     }
   };
 
+  const handleGenreChange = (g: string | null) => {
+    setGenre(g);
+    scheduleMetadataSave();
+  };
+
+  const handleTagsChange = (t: string[]) => {
+    setTags(t);
+    scheduleMetadataSave();
+  };
+
+  const handleSummaryChange = (s: string) => {
+    setIdeaSummary(s || null);
+    scheduleMetadataSave();
+  };
+
   const totalWords = sectionsWordCount(sections);
 
   return (
@@ -206,6 +271,18 @@ export default function PieceEditor({ pieceId, initialTitle, initialSections, in
           </span>
 
           <button
+            onClick={() => setShowMetadata((v) => !v)}
+            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              showMetadata
+                ? 'bg-air-force-blue-100 text-air-force-blue-700'
+                : 'bg-pale-slate-100 text-pale-slate-600 hover:bg-pale-slate-200'
+            }`}
+            aria-label="Toggle metadata panel"
+          >
+            Metadata
+          </button>
+
+          <button
             onClick={handlePublishToggle}
             disabled={publishing}
             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
@@ -220,88 +297,130 @@ export default function PieceEditor({ pieceId, initialTitle, initialSections, in
       </header>
 
       {/* Editor body */}
-      <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-8 space-y-6">
-        {sections.map((section, index) => (
-          <div
-            key={`${section.ordinal}-${index}`}
-            className="bg-white rounded-xl shadow-sm border border-pale-slate-200"
-          >
-            {/* Section header */}
-            <div className="flex items-center gap-2 px-4 pt-3 pb-2 border-b border-pale-slate-100">
-              <div className="flex flex-col gap-0.5">
-                <button
-                  onClick={() => handleMoveUp(index)}
-                  disabled={index === 0}
-                  aria-label="Move section up"
-                  className="text-pale-slate-400 hover:text-pale-slate-600 disabled:opacity-30 text-xs leading-none"
+      <div className="flex flex-1">
+        <main className="flex-1 overflow-y-auto py-8">
+          <div className="max-w-3xl w-full mx-auto px-4 space-y-6">
+            {sections.map((section, index) => {
+              const inherited = isInheritedSection(section.ordinal, inheritedCount);
+
+              return (
+                <div
+                  key={`${section.ordinal}-${index}`}
+                  className={`rounded-xl shadow-sm border ${
+                    inherited
+                      ? 'bg-pale-slate-50 border-pale-slate-200 opacity-80'
+                      : 'bg-white border-pale-slate-200'
+                  }`}
                 >
-                  ▲
-                </button>
-                <button
-                  onClick={() => handleMoveDown(index)}
-                  disabled={index === sections.length - 1}
-                  aria-label="Move section down"
-                  className="text-pale-slate-400 hover:text-pale-slate-600 disabled:opacity-30 text-xs leading-none"
-                >
-                  ▼
-                </button>
-              </div>
+                  {/* Section header */}
+                  <div className="flex items-center gap-2 px-4 pt-3 pb-2 border-b border-pale-slate-100">
+                    {!inherited && (
+                      <div className="flex flex-col gap-0.5">
+                        <button
+                          onClick={() => handleMoveUp(index)}
+                          disabled={index === 0}
+                          aria-label="Move section up"
+                          className="text-pale-slate-400 hover:text-pale-slate-600 disabled:opacity-30 text-xs leading-none"
+                        >
+                          ▲
+                        </button>
+                        <button
+                          onClick={() => handleMoveDown(index)}
+                          disabled={index === sections.length - 1}
+                          aria-label="Move section down"
+                          className="text-pale-slate-400 hover:text-pale-slate-600 disabled:opacity-30 text-xs leading-none"
+                        >
+                          ▼
+                        </button>
+                      </div>
+                    )}
 
-              <div className="flex-1 min-w-0">
-                {editingTitleIndex === index ? (
-                  <input
-                    autoFocus
-                    defaultValue={section.title ?? ''}
-                    onBlur={(e) => handleRename(index, e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleRename(index, (e.target as HTMLInputElement).value);
-                      if (e.key === 'Escape') setEditingTitleIndex(null);
-                    }}
-                    className="w-full text-sm font-medium text-pale-slate-700 border-b border-air-force-blue-400 focus:outline-none bg-transparent"
-                    aria-label="Section title"
-                  />
-                ) : (
-                  <button
-                    onClick={() => setEditingTitleIndex(index)}
-                    className="text-sm font-medium text-pale-slate-600 hover:text-pale-slate-800 truncate max-w-full text-left"
-                    aria-label={`Rename section ${index + 1}`}
-                  >
-                    {section.title ?? `Section ${index + 1}`}
-                  </button>
-                )}
-              </div>
+                    {inherited && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-pale-slate-200 text-pale-slate-500 font-medium shrink-0">
+                        Inherited
+                      </span>
+                    )}
 
-              <span className="text-xs text-pale-slate-400 shrink-0">
-                {countWords(section.content)} words
-              </span>
+                    <div className="flex-1 min-w-0">
+                      {!inherited && editingTitleIndex === index ? (
+                        <input
+                          autoFocus
+                          defaultValue={section.title ?? ''}
+                          onBlur={(e) => handleRename(index, e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleRename(index, (e.target as HTMLInputElement).value);
+                            if (e.key === 'Escape') setEditingTitleIndex(null);
+                          }}
+                          className="w-full text-sm font-medium text-pale-slate-700 border-b border-air-force-blue-400 focus:outline-none bg-transparent"
+                          aria-label="Section title"
+                        />
+                      ) : (
+                        <button
+                          onClick={() => !inherited && setEditingTitleIndex(index)}
+                          disabled={inherited}
+                          className="text-sm font-medium text-pale-slate-600 hover:text-pale-slate-800 truncate max-w-full text-left disabled:cursor-default"
+                          aria-label={`Section ${index + 1} title`}
+                        >
+                          {section.title ?? `Section ${index + 1}`}
+                        </button>
+                      )}
+                    </div>
 
-              <button
-                onClick={() => handleDeleteSection(index)}
-                disabled={sections.length === 1}
-                aria-label="Delete section"
-                className="text-pale-slate-300 hover:text-ruby-red-500 disabled:opacity-30 text-sm ml-1"
-              >
-                ✕
-              </button>
-            </div>
+                    <span className="text-xs text-pale-slate-400 shrink-0">
+                      {countWords(section.content)} words
+                    </span>
 
-            {/* TipTap editor */}
-            <SectionEditor
-              initialContent={section.content}
-              onChange={(md) => handleContentChange(index, md)}
-              placeholder={`Write section ${index + 1}…`}
-            />
+                    {!inherited && (
+                      <button
+                        onClick={() => handleDeleteSection(index)}
+                        disabled={sections.length === 1}
+                        aria-label="Delete section"
+                        className="text-pale-slate-300 hover:text-ruby-red-500 disabled:opacity-30 text-sm ml-1"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  {inherited ? (
+                    <div className="px-4 py-4 text-pale-slate-500 text-sm whitespace-pre-wrap leading-relaxed select-none">
+                      {section.content || <span className="italic text-pale-slate-400">Empty section</span>}
+                    </div>
+                  ) : (
+                    <SectionEditor
+                      initialContent={section.content}
+                      onChange={(md) => handleContentChange(index, md)}
+                      placeholder={`Write section ${index + 1}…`}
+                    />
+                  )}
+                </div>
+              );
+            })}
+
+            <button
+              onClick={handleAddSection}
+              className="w-full py-3 rounded-xl border-2 border-dashed border-pale-slate-300 text-pale-slate-500 hover:border-air-force-blue-400 hover:text-air-force-blue-600 transition-colors text-sm font-medium"
+              aria-label="Add section"
+            >
+              + Add section
+            </button>
           </div>
-        ))}
+        </main>
 
-        <button
-          onClick={handleAddSection}
-          className="w-full py-3 rounded-xl border-2 border-dashed border-pale-slate-300 text-pale-slate-500 hover:border-air-force-blue-400 hover:text-air-force-blue-600 transition-colors text-sm font-medium"
-          aria-label="Add section"
-        >
-          + Add section
-        </button>
-      </main>
+        {/* Metadata sidebar */}
+        {showMetadata && (
+          <aside className="w-72 shrink-0 border-l border-pale-slate-200 bg-white overflow-y-auto">
+            <MetadataPanel
+              genre={genre}
+              tags={tags}
+              ideaSummary={ideaSummary}
+              onGenreChange={handleGenreChange}
+              onTagsChange={handleTagsChange}
+              onSummaryChange={handleSummaryChange}
+            />
+          </aside>
+        )}
+      </div>
     </div>
   );
 }

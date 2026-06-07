@@ -1,7 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { listAuthorPieces } from '@/lib/pieces';
+import { upsertProfile } from '@/lib/auth';
 import LogoutButton from './LogoutButton';
 import NewPieceButton from '@/components/NewPieceButton';
+import DashboardTable from '@/components/DashboardTable';
+import NavBar from '@/components/NavBar';
 
 export default async function Home() {
   const supabase = await createClient();
@@ -11,53 +15,57 @@ export default async function Home() {
 
   if (!user) redirect('/login');
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('display_name, avatar_url, username')
-    .eq('id', user.id)
-    .single();
+  await upsertProfile(supabase, user);
+
+  const [{ data: profile }, { data: pieces }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('display_name, avatar_url, username')
+      .eq('id', user.id)
+      .single(),
+    listAuthorPieces(supabase, user.id),
+  ]);
 
   const displayName = profile?.display_name ?? profile?.username ?? user.email;
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen bg-pale-slate-50">
-      <div className="bg-white rounded-2xl shadow-lg p-12 max-w-lg w-full text-center">
+    <div className="min-h-screen bg-pale-slate-50">
+      <NavBar
+        rightContent={
+          <>
+            {profile?.avatar_url && (
+              <img
+                src={profile.avatar_url}
+                alt={displayName ?? ''}
+                className="w-8 h-8 rounded-full border border-pale-slate-200"
+              />
+            )}
+            <span className="text-pale-slate-700 text-sm font-medium">{displayName}</span>
+            <LogoutButton />
+          </>
+        }
+      />
+
+      <main className="max-w-5xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-4xl font-bold text-ruby-red-600">Milrumos</h1>
-          <LogoutButton />
-        </div>
-
-        {profile?.avatar_url && (
-          <img
-            src={profile.avatar_url}
-            alt={displayName ?? ''}
-            className="w-16 h-16 rounded-full mx-auto mb-4 border-2 border-pale-slate-200"
-          />
-        )}
-
-        <p className="text-pale-slate-700 text-lg mb-2">
-          Welcome, <span className="font-semibold text-air-force-blue-600">{displayName}</span>
-        </p>
-        <p className="text-pale-slate-500 text-sm mb-8">
-          Collaborative writing. Branch from any point. Build on each other.
-        </p>
-
-        <div className="flex justify-center mb-6">
+          <h2 className="text-2xl font-semibold text-pale-slate-800">My Pieces</h2>
           <NewPieceButton />
         </div>
 
-        <div className="flex gap-3 justify-center flex-wrap">
-          <span className="px-4 py-2 rounded-full bg-ruby-red-100 text-ruby-red-700 text-sm font-medium">
-            Write
-          </span>
-          <span className="px-4 py-2 rounded-full bg-air-force-blue-100 text-air-force-blue-700 text-sm font-medium">
-            Branch
-          </span>
-          <span className="px-4 py-2 rounded-full bg-sky-blue-100 text-sky-blue-700 text-sm font-medium">
-            Collaborate
-          </span>
-        </div>
-      </div>
-    </main>
+        {!pieces?.length ? (
+          <div className="text-center py-20 bg-white rounded-xl border border-pale-slate-200 shadow-sm">
+            <p className="text-pale-slate-600 text-lg font-medium mb-2">No pieces yet.</p>
+            <p className="text-pale-slate-400 text-sm mb-8">
+              Start writing. Branch from anything. Build together.
+            </p>
+            <div className="flex justify-center">
+              <NewPieceButton />
+            </div>
+          </div>
+        ) : (
+          <DashboardTable pieces={pieces} />
+        )}
+      </main>
+    </div>
   );
 }

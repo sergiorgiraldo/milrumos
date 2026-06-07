@@ -1,4 +1,4 @@
-import { createPiece, updatePiece, savePiece, deletePiece, setStatus, getPublicPiece } from '@/lib/pieces';
+import { createPiece, updatePiece, savePiece, deletePiece, setStatus, getPublicPiece, listAuthorPieces, countWords } from '@/lib/pieces';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const AUTHOR_ID = 'author-1';
@@ -306,5 +306,113 @@ describe('getPublicPiece', () => {
 
     expect(result.data).toBeNull();
     expect(result.error?.code).toBe('NOT_FOUND');
+  });
+});
+
+// ---- countWords -----------------------------------------------------------------
+
+describe('countWords', () => {
+  it('counts plain words', () => {
+    expect(countWords('hello world foo')).toBe(3);
+  });
+
+  it('strips markdown syntax before counting', () => {
+    expect(countWords('# Heading\n\n**bold** and _italic_')).toBe(4);
+  });
+
+  it('returns 0 for empty string', () => {
+    expect(countWords('')).toBe(0);
+  });
+
+  it('handles whitespace-only string', () => {
+    expect(countWords('   \n  \t  ')).toBe(0);
+  });
+});
+
+// ---- listAuthorPieces -----------------------------------------------------------
+
+describe('listAuthorPieces', () => {
+  it('returns pieces with computed section_count and word_count', async () => {
+    const rows = [
+      {
+        id: PIECE_ID,
+        author_id: AUTHOR_ID,
+        title: 'Story',
+        status: 'draft',
+        created_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-02T00:00:00Z',
+        sections: [{ content: 'Hello world this is text' }],
+      },
+    ];
+    const supabase = makeClient(makeChain({ data: rows, error: null }));
+
+    const result = await listAuthorPieces(supabase, AUTHOR_ID);
+
+    expect(result.error).toBeNull();
+    expect(result.data).toHaveLength(1);
+    expect(result.data![0].section_count).toBe(1);
+    expect(result.data![0].word_count).toBe(5);
+    expect(result.data![0].title).toBe('Story');
+  });
+
+  it('returns empty array when author has no pieces', async () => {
+    const supabase = makeClient(makeChain({ data: [], error: null }));
+
+    const result = await listAuthorPieces(supabase, AUTHOR_ID);
+
+    expect(result.error).toBeNull();
+    expect(result.data).toHaveLength(0);
+  });
+
+  it('handles pieces with no sections', async () => {
+    const rows = [
+      {
+        id: PIECE_ID,
+        author_id: AUTHOR_ID,
+        title: 'Empty',
+        status: 'draft',
+        created_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-01T00:00:00Z',
+        sections: [],
+      },
+    ];
+    const supabase = makeClient(makeChain({ data: rows, error: null }));
+
+    const result = await listAuthorPieces(supabase, AUTHOR_ID);
+
+    expect(result.data![0].section_count).toBe(0);
+    expect(result.data![0].word_count).toBe(0);
+  });
+
+  it('aggregates word counts across multiple sections', async () => {
+    const rows = [
+      {
+        id: PIECE_ID,
+        author_id: AUTHOR_ID,
+        title: 'Multi',
+        status: 'published',
+        created_at: '2026-01-01T00:00:00Z',
+        updated_at: '2026-01-01T00:00:00Z',
+        sections: [
+          { content: 'one two three' },
+          { content: 'four five' },
+        ],
+      },
+    ];
+    const supabase = makeClient(makeChain({ data: rows, error: null }));
+
+    const result = await listAuthorPieces(supabase, AUTHOR_ID);
+
+    expect(result.data![0].section_count).toBe(2);
+    expect(result.data![0].word_count).toBe(5);
+  });
+
+  it('returns DB_ERROR on query failure', async () => {
+    const supabase = makeClient(makeChain({ data: null, error: { message: 'connection failed' } }));
+
+    const result = await listAuthorPieces(supabase, AUTHOR_ID);
+
+    expect(result.data).toBeNull();
+    expect(result.error?.code).toBe('DB_ERROR');
   });
 });

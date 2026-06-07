@@ -1,9 +1,10 @@
 ---
 id: TASK-13
 title: Implement full-text search
-status: To Do
+status: In Progress
 assignee: []
 created_date: '2026-06-02 06:21'
+updated_date: '2026-06-06 13:32'
 labels:
   - backend
   - frontend

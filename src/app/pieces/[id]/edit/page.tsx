@@ -35,12 +35,46 @@ export default async function EditPage({ params }: Props) {
       content: s.content,
     }));
 
+  let inheritedCount = 0;
+  const { data: lineage } = await supabase
+    .from('piece_lineage')
+    .select('fork_section_id')
+    .eq('piece_id', id)
+    .maybeSingle();
+
+  if (lineage?.fork_section_id) {
+    const { data: forkSec } = await supabase
+      .from('sections')
+      .select('ordinal')
+      .eq('id', lineage.fork_section_id)
+      .single();
+    if (forkSec) {
+      inheritedCount = (forkSec as { ordinal: number }).ordinal;
+    }
+  }
+
+  const { data: metadataRow } = await supabase
+    .from('piece_metadata')
+    .select('genre, tags, idea_summary')
+    .eq('piece_id', id)
+    .maybeSingle();
+
+  const initialMetadata = metadataRow
+    ? {
+        genre: (metadataRow as { genre: string | null }).genre ?? null,
+        tags: (metadataRow as { tags: string[] }).tags ?? [],
+        idea_summary: (metadataRow as { idea_summary: string | null }).idea_summary ?? null,
+      }
+    : { genre: null, tags: [], idea_summary: null };
+
   return (
     <PieceEditor
       pieceId={id}
       initialTitle={p.title}
       initialSections={sections}
       initialStatus={p.status}
+      inheritedCount={inheritedCount}
+      initialMetadata={initialMetadata}
     />
   );
 }

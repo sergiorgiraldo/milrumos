@@ -1,7 +1,13 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Piece, Section, PieceStatus } from './schema';
 
-export type PieceError = { code: 'NOT_FOUND' | 'FORBIDDEN' | 'DB_ERROR'; message: string };
+export type PieceSummary = Piece & { section_count: number; word_count: number };
+
+export function countWords(text: string): number {
+  return text.replace(/[#*_`~[\]()>=-]/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+}
+
+export type PieceError = { code: 'NOT_FOUND' | 'FORBIDDEN' | 'BAD_REQUEST' | 'DB_ERROR'; message: string };
 export type PieceResult<T> = { data: T; error: null } | { data: null; error: PieceError };
 
 function buildSnapshot(
@@ -183,6 +189,39 @@ export async function deletePiece(
   return { data: { deleted: true }, error: null };
 }
 
+export async function listAuthorPieces(
+  supabase: SupabaseClient,
+  authorId: string
+): Promise<PieceResult<PieceSummary[]>> {
+  const { data, error } = await supabase
+    .from('pieces')
+    .select('*, sections(content)')
+    .eq('author_id', authorId)
+    .order('updated_at', { ascending: false });
+
+  if (error) {
+    return { data: null, error: { code: 'DB_ERROR', message: error.message } };
+  }
+
+  const rows = (data ?? []) as Array<Piece & { sections?: Array<{ content: string }> }>;
+  return {
+    data: rows.map((row) => {
+      const secs = row.sections ?? [];
+      return {
+        id: row.id,
+        author_id: row.author_id,
+        title: row.title,
+        status: row.status,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        section_count: secs.length,
+        word_count: secs.reduce((sum, s) => sum + countWords(s.content), 0),
+      };
+    }),
+    error: null,
+  };
+}
+
 export async function getPublicPiece(
   supabase: SupabaseClient,
   pieceId: string,
@@ -205,4 +244,69 @@ export async function setStatus(
   status: PieceStatus
 ): Promise<PieceResult<Piece>> {
   return updatePiece(supabase, pieceId, authorId, { status });
+}
+
+export async function forkPiece(
+  supabase: SupabaseClient,
+  pieceId: string,
+  sectionId: string,
+  requesterId: string
+): Promise<PieceResult<Piece>> {
+  const { data, error } = await supabase
+    .from('pieces')
+    .select('*, sections(*)')
+    .eq('id', pieceId)
+    .single();
+
+  if (error || !data) {
+    return { data: null, error: { code: 'NOT_FOUND', message: 'piece not found' } };
+  }
+
+  const piece = data as Piece & { sections?: Section[] };
+
+  if (piece.author_id === requesterId) {
+    return { data: null, error: { code: 'BAD_REQUEST', message: 'cannot fork own piece' } };
+  }
+
+  if (piece.status === 'draft') {
+    return { data: null, error: { code: 'FORBIDDEN', message: 'cannot fork draft piece' } };
+  }
+
+  const sections = [...(piece.sections ?? [])].sort((a, b) => a.ordinal - b.ordinal);
+  const forkIdx = sections.findIndex((s) => s.id === sectionId);
+  if (forkIdx === -1) {
+    return { data: null, error: { code: 'NOT_FOUND', message: 'section not found' } };
+  }
+
+  const inherited = sections.slice(0, forkIdx + 1);
+
+  const { data: newPiece, error: cErr } = await supabase
+    .from('pieces')
+    .insert({ title: piece.title, author_id: requesterId, status: 'draft' })
+    .select()
+    .single();
+
+  if (cErr || !newPiece) {
+    return { data: null, error: { code: 'DB_ERROR', message: cErr?.message ?? 'create failed' } };
+  }
+
+  const np = newPiece as Piece;
+
+  await supabase.from('sections').insert([
+    ...inherited.map((s, i) => ({
+      piece_id: np.id,
+      ordinal: i + 1,
+      title: s.title ?? null,
+      content: s.content,
+    })),
+    { piece_id: np.id, ordinal: inherited.length + 1, title: null, content: '' },
+  ]);
+
+  await supabase.from('piece_lineage').insert({
+    piece_id: np.id,
+    parent_piece_id: pieceId,
+    fork_section_id: sectionId,
+  });
+
+  return { data: np, error: null };
 }

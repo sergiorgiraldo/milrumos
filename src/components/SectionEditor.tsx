@@ -25,7 +25,8 @@ export default function SectionEditor({ initialContent, onChange, placeholder }:
       },
     },
     onUpdate({ editor: e }) {
-      onChangeRef.current((e.storage.markdown as { getMarkdown: () => string }).getMarkdown());
+      const storage = e.storage as unknown as { markdown: { getMarkdown: () => string } };
+      onChangeRef.current(storage.markdown.getMarkdown());
     },
   });
 
