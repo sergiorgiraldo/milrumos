@@ -12,6 +12,13 @@ export default function NavBar({ rightContent, searchDefaultValue }: Props) {
         Milrumos
       </a>
 
+      <a
+        href="/explore"
+        className="text-sm font-medium text-pale-slate-600 hover:text-pale-slate-900 shrink-0"
+      >
+        Explore
+      </a>
+
       <form action="/search" method="GET" className="flex-1 max-w-md">
         <input
           name="q"

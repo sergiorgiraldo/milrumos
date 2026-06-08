@@ -1,11 +1,11 @@
 ---
 id: TASK-11
 title: Show lineage/origin on piece detail page
-status: In Progress
+status: Done
 assignee:
   - Sergio Giraldo
 created_date: '2026-06-02 06:21'
-updated_date: '2026-06-04 20:55'
+updated_date: '2026-06-04 20:57'
 labels:
   - frontend
   - branching
@@ -24,11 +24,11 @@ When a piece was forked from another piece, the detail page must clearly show it
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Forked pieces display a Forked from banner linking to the parent piece
-- [ ] #2 Banner shows: parent piece title, author name, and the section name used as fork point
-- [ ] #3 Original pieces (no parent) show no lineage banner
-- [ ] #4 Clicking the banner link navigates to the parent piece detail page
-- [ ] #5 Unit tests cover lineage-present and lineage-absent rendering
+- [x] #1 Forked pieces display a Forked from banner linking to the parent piece
+- [x] #2 Banner shows: parent piece title, author name, and the section name used as fork point
+- [x] #3 Original pieces (no parent) show no lineage banner
+- [x] #4 Clicking the banner link navigates to the parent piece detail page
+- [x] #5 Unit tests cover lineage-present and lineage-absent rendering
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -53,3 +53,9 @@ When a piece was forked from another piece, the detail page must clearly show it
 - AC#4: banner wraps parent piece title in `<a href="/pieces/{parentId}">`
 - AC#5: lineage.test.ts covers both cases
 <!-- SECTION:PLAN:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Implemented lineage/origin display on piece detail page.\n\n- `src/lib/lineage.ts`: `getLineage()` queries piece_lineage, fetches parent piece title, author name, fork section title.\n- `src/components/LineageBanner.tsx`: renders sky-blue banner with "Forked from [title] by [author] · starting from [section]"; link navigates to parent piece; returns null when no lineage.\n- `src/app/pieces/[id]/page.tsx`: calls getLineage in parallel with existing queries, renders LineageBanner above the header.\n- `src/__tests__/lineage.test.ts`: 7 tests covering getLineage (null/present/fallback/not-found) and LineageBanner rendering (absent/present/no-section). All 137 tests pass.
+<!-- SECTION:FINAL_SUMMARY:END -->

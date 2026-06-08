@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import SectionEditor from './SectionEditor';
 import MetadataPanel from './MetadataPanel';
+import VersionHistoryPanel from './VersionHistoryPanel';
 import {
   SectionData,
   addSection,
@@ -53,6 +54,7 @@ export default function PieceEditor({
   const [publishing, setPublishing] = useState(false);
   const [editingTitleIndex, setEditingTitleIndex] = useState<number | null>(null);
   const [showMetadata, setShowMetadata] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   // Metadata state
   const [genre, setGenre] = useState<string | null>(initialMetadata?.genre ?? null);
@@ -271,6 +273,14 @@ export default function PieceEditor({
           </span>
 
           <button
+            onClick={() => setShowHistory(true)}
+            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-pale-slate-100 text-pale-slate-600 hover:bg-pale-slate-200 transition-colors"
+            aria-label="Open version history"
+          >
+            History
+          </button>
+
+          <button
             onClick={() => setShowMetadata((v) => !v)}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               showMetadata
@@ -421,6 +431,8 @@ export default function PieceEditor({
           </aside>
         )}
       </div>
+
+      {showHistory && <VersionHistoryPanel pieceId={pieceId} onClose={() => setShowHistory(false)} />}
     </div>
   );
 }

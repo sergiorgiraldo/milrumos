@@ -1,10 +1,10 @@
 ---
 id: TASK-12
 title: Build piece metadata management UI
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-06-02 06:21'
-updated_date: '2026-06-06 13:32'
+updated_date: '2026-06-06 13:39'
 labels:
   - frontend
   - metadata
@@ -23,10 +23,10 @@ Authors need to tag their pieces with structured metadata: genre (single-select 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Editor sidebar or panel exposes: genre selector, tag input (comma-separated or pill input), idea/summary textarea
-- [ ] #2 Genre list includes at least: Fiction, Non-fiction, Poetry, Essay, Fantasy, Sci-Fi, Horror, Romance, Other
-- [ ] #3 Tags are stored as an array in piece_metadata table
-- [ ] #4 Metadata saves alongside auto-save (no separate save action needed)
-- [ ] #5 Metadata is rendered on the piece detail page below the title
-- [ ] #6 Unit tests cover metadata save, genre validation, and tag parsing
+- [x] #1 Editor sidebar or panel exposes: genre selector, tag input (comma-separated or pill input), idea/summary textarea
+- [x] #2 Genre list includes at least: Fiction, Non-fiction, Poetry, Essay, Fantasy, Sci-Fi, Horror, Romance, Other
+- [x] #3 Tags are stored as an array in piece_metadata table
+- [x] #4 Metadata saves alongside auto-save (no separate save action needed)
+- [x] #5 Metadata is rendered on the piece detail page below the title
+- [x] #6 Unit tests cover metadata save, genre validation, and tag parsing
 <!-- AC:END -->

@@ -136,6 +136,13 @@ export default async function PieceDetailPage({ params }: Props) {
             </div>
           )}
 
+          <a
+            href={`/pieces/${id}/tree`}
+            className="inline-flex items-center gap-1.5 mt-4 text-sm font-medium text-air-force-blue-600 hover:text-air-force-blue-800"
+          >
+            <span aria-hidden="true">⤷</span> View branch tree
+          </a>
+
           {meta?.idea_summary && (
             <p className="mt-4 text-sm text-pale-slate-600 leading-relaxed border-l-2 border-pale-slate-300 pl-3 italic">
               {meta.idea_summary}

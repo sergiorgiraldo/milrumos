@@ -1,9 +1,10 @@
 ---
 id: TASK-8
 title: Build author dashboard (My Pieces)
-status: To Do
+status: Done
 assignee: []
 created_date: '2026-06-02 06:21'
+updated_date: '2026-06-04 13:19'
 labels:
   - frontend
 milestone: m-1
