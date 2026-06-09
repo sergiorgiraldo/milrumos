@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import NavBar from '@/components/NavBar';
 import PieceCard from '@/components/PieceCard';
 import { GENRES } from '@/lib/schema';
+import { getServerT } from '@/lib/i18n';
 import {
   listExplorePieces,
   parseExploreSort,
@@ -14,11 +15,6 @@ import {
 } from '@/lib/explore';
 
 type Props = { searchParams: Promise<{ genre?: string; sort?: string; page?: string }> };
-
-const SORT_LABELS: Record<ExploreSort, string> = {
-  newest: 'Newest',
-  most_forked: 'Most Forked',
-};
 
 function pillClass(active: boolean): string {
   return `px-3 py-1 rounded-full text-sm font-medium transition-colors ${
@@ -34,7 +30,11 @@ export default async function ExplorePage({ searchParams }: Props) {
   const sort = parseExploreSort(params.sort);
   const page = parseExplorePage(params.page);
 
-  const supabase = await createClient();
+  const [supabase, { t }] = await Promise.all([
+    createClient(),
+    getServerT(),
+  ]);
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -44,22 +44,27 @@ export default async function ExplorePage({ searchParams }: Props) {
   const pieces = result.data ?? [];
   const hasMore = pieces.length === EXPLORE_PAGE_SIZE;
 
+  const SORT_LABELS: Record<ExploreSort, string> = {
+    newest: t('explore.newest'),
+    most_forked: t('explore.mostForked'),
+  };
+
   return (
     <div className="min-h-screen bg-pale-slate-50">
       <NavBar />
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         <header className="mb-6">
-          <h1 className="text-2xl font-bold text-pale-slate-900">Explore</h1>
+          <h1 className="text-2xl font-bold text-pale-slate-900">{t('explore.title')}</h1>
           <p className="text-sm text-pale-slate-500 mt-1">
-            Discover recently published pieces from the community
+            {t('explore.subtitle')}
           </p>
         </header>
 
         {/* Genre filter pills */}
         <div className="flex flex-wrap gap-2 mb-3" role="tablist" aria-label="Filter by genre">
           <a href={buildExploreHref({ sort })} className={pillClass(!genre)}>
-            All genres
+            {t('explore.allGenres')}
           </a>
           {GENRES.map((g) => (
             <a key={g} href={buildExploreHref({ genre: g, sort })} className={pillClass(genre === g)}>
@@ -70,7 +75,7 @@ export default async function ExplorePage({ searchParams }: Props) {
 
         {/* Sort options */}
         <div className="flex items-center gap-2 mb-6 text-sm">
-          <span className="text-pale-slate-500">Sort by</span>
+          <span className="text-pale-slate-500">{t('explore.sortBy')}</span>
           {EXPLORE_SORTS.map((s) => (
             <a
               key={s}
@@ -88,9 +93,9 @@ export default async function ExplorePage({ searchParams }: Props) {
 
         {pieces.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-xl border border-pale-slate-200">
-            <p className="text-pale-slate-500 text-lg font-medium">No published pieces yet</p>
+            <p className="text-pale-slate-500 text-lg font-medium">{t('explore.noPublished')}</p>
             <p className="text-pale-slate-400 text-sm mt-1">
-              Check back soon, or be the first to publish in this genre
+              {t('explore.noPublishedSubtext')}
             </p>
           </div>
         ) : (
@@ -108,7 +113,7 @@ export default async function ExplorePage({ searchParams }: Props) {
                 href={buildExploreHref({ genre, sort, page: page - 1 })}
                 className="px-4 py-1.5 rounded-lg bg-white border border-pale-slate-200 text-sm font-medium text-pale-slate-600 hover:bg-pale-slate-100"
               >
-                ← Previous
+                {t('explore.previous')}
               </a>
             ) : (
               <span />
@@ -118,7 +123,7 @@ export default async function ExplorePage({ searchParams }: Props) {
                 href={buildExploreHref({ genre, sort, page: page + 1 })}
                 className="px-4 py-1.5 rounded-lg bg-white border border-pale-slate-200 text-sm font-medium text-pale-slate-600 hover:bg-pale-slate-100"
               >
-                Next →
+                {t('explore.next')}
               </a>
             )}
           </div>

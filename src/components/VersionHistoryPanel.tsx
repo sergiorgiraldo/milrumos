@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 export interface VersionListItem {
   id: string;
@@ -16,7 +17,7 @@ interface Props {
 }
 
 function formatTimestamp(iso: string): string {
-  return new Date(iso).toLocaleString('en-US', {
+  return new Date(iso).toLocaleString(undefined, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -26,6 +27,7 @@ function formatTimestamp(iso: string): string {
 }
 
 export default function VersionHistoryPanel({ pieceId, onClose }: Props) {
+  const { t } = useTranslation();
   const [versions, setVersions] = useState<VersionListItem[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -40,19 +42,19 @@ export default function VersionHistoryPanel({ pieceId, onClose }: Props) {
         const res = await fetch(`/api/pieces/${pieceId}/versions`);
         if (!res.ok) {
           const body = await res.json();
-          if (!cancelled) setLoadError(body.error ?? 'Failed to load versions');
+          if (!cancelled) setLoadError(body.error ?? t('forkPanel.networkError'));
           return;
         }
         const body = await res.json();
         if (!cancelled) setVersions(body.versions ?? []);
       } catch {
-        if (!cancelled) setLoadError('Network error');
+        if (!cancelled) setLoadError(t('forkPanel.networkError'));
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [pieceId]);
+  }, [pieceId, t]);
 
   const handleRestore = async (versionId: string) => {
     setRestoring(true);
@@ -61,27 +63,27 @@ export default function VersionHistoryPanel({ pieceId, onClose }: Props) {
       const res = await fetch(`/api/pieces/${pieceId}/versions/${versionId}/restore`, { method: 'POST' });
       if (!res.ok) {
         const body = await res.json();
-        setRestoreError(body.error ?? 'Restore failed');
+        setRestoreError(body.error ?? t('forkPanel.networkError'));
         setRestoring(false);
         return;
       }
       window.location.reload();
     } catch {
-      setRestoreError('Network error');
+      setRestoreError(t('forkPanel.networkError'));
       setRestoring(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-30 flex justify-end" role="dialog" aria-label="Version history" aria-modal="true">
+    <div className="fixed inset-0 z-30 flex justify-end" role="dialog" aria-label={t('versions.title')} aria-modal="true">
       <div className="absolute inset-0 bg-pale-slate-900/40" onClick={onClose} />
 
       <aside className="relative w-full max-w-md bg-white shadow-xl flex flex-col h-full">
         <header className="flex items-center justify-between px-5 py-4 border-b border-pale-slate-200">
-          <h2 className="text-base font-semibold text-pale-slate-800">Version history</h2>
+          <h2 className="text-base font-semibold text-pale-slate-800">{t('versions.title')}</h2>
           <button
             onClick={onClose}
-            aria-label="Close version history"
+            aria-label={t('versions.close')}
             className="text-pale-slate-400 hover:text-pale-slate-600 text-lg leading-none"
           >
             ✕
@@ -98,11 +100,11 @@ export default function VersionHistoryPanel({ pieceId, onClose }: Props) {
           {loadError && <p className="px-5 py-4 text-sm text-ruby-red-600">{loadError}</p>}
 
           {!loadError && versions === null && (
-            <p className="px-5 py-4 text-sm text-pale-slate-400">Loading versions…</p>
+            <p className="px-5 py-4 text-sm text-pale-slate-400">{t('versions.loading')}</p>
           )}
 
           {versions !== null && versions.length === 0 && (
-            <p className="px-5 py-4 text-sm text-pale-slate-400">No saved versions yet.</p>
+            <p className="px-5 py-4 text-sm text-pale-slate-400">{t('versions.noVersions')}</p>
           )}
 
           {versions !== null && versions.length > 0 && (
@@ -120,9 +122,11 @@ export default function VersionHistoryPanel({ pieceId, onClose }: Props) {
                     >
                       <div className="flex items-center justify-between gap-3">
                         <span className="text-sm font-medium text-pale-slate-800">
-                          Version {v.version_number}
+                          {t('versions.version', { n: v.version_number })}
                         </span>
-                        <span className="text-xs text-pale-slate-400">{v.word_count} words</span>
+                        <span className="text-xs text-pale-slate-400">
+                          {t('editor.wordsCount', { count: v.word_count })}
+                        </span>
                       </div>
                       <p className="text-xs text-pale-slate-500 mt-0.5">{formatTimestamp(v.created_at)}</p>
                     </button>
@@ -136,8 +140,7 @@ export default function VersionHistoryPanel({ pieceId, onClose }: Props) {
                         {isConfirming ? (
                           <div className="rounded-lg border border-ruby-red-200 bg-ruby-red-50 p-3 space-y-2">
                             <p className="text-xs text-ruby-red-700">
-                              Restoring this version will overwrite your current sections. This can&rsquo;t be
-                              undone, though the restore itself is recorded as a new version.
+                              {t('versions.restoreWarning')}
                             </p>
                             <div className="flex gap-2">
                               <button
@@ -145,14 +148,14 @@ export default function VersionHistoryPanel({ pieceId, onClose }: Props) {
                                 disabled={restoring}
                                 className="px-3 py-1.5 rounded-lg bg-ruby-red-600 text-white text-xs font-medium hover:bg-ruby-red-700 disabled:opacity-50"
                               >
-                                {restoring ? 'Restoring…' : 'Yes, restore this version'}
+                                {restoring ? t('versions.restoring') : t('versions.yesRestore')}
                               </button>
                               <button
                                 onClick={() => setConfirmingId(null)}
                                 disabled={restoring}
                                 className="px-3 py-1.5 rounded-lg bg-white border border-pale-slate-200 text-pale-slate-600 text-xs font-medium hover:bg-pale-slate-50 disabled:opacity-50"
                               >
-                                Cancel
+                                {t('versions.cancel')}
                               </button>
                             </div>
                           </div>
@@ -161,7 +164,7 @@ export default function VersionHistoryPanel({ pieceId, onClose }: Props) {
                             onClick={() => setConfirmingId(v.id)}
                             className="px-3 py-1.5 rounded-lg border border-air-force-blue-300 text-air-force-blue-600 text-xs font-medium hover:bg-air-force-blue-50 hover:border-air-force-blue-400 transition-colors"
                           >
-                            Restore this version
+                            {t('versions.restore')}
                           </button>
                         )}
                       </div>

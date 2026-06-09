@@ -1,0 +1,135 @@
+{
+  "app": {
+    "title": "Milrumos — Collaborative Writing",
+    "description": "Write, branch, build on each other's work.",
+    "tagline": "Collaborative writing. Branch from any point."
+  },
+  "nav": {
+    "explore": "Explore",
+    "searchPlaceholder": "Search pieces…"
+  },
+  "auth": {
+    "signOut": "Sign out",
+    "authFailed": "Authentication failed. Try again.",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithGitHub": "Continue with GitHub"
+  },
+  "dashboard": {
+    "myPieces": "My Pieces",
+    "noPiecesYet": "No pieces yet.",
+    "noPiecesSubtext": "Start writing. Branch from anything. Build together."
+  },
+  "table": {
+    "title": "Title",
+    "status": "Status",
+    "lastModified": "Last Modified",
+    "sections": "Sections",
+    "words": "Words",
+    "actions": "Actions",
+    "confirmDelete": "Delete?",
+    "confirmYes": "Yes, delete",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "delete": "Delete"
+  },
+  "status": {
+    "published": "Published",
+    "draft": "Draft"
+  },
+  "newPiece": {
+    "button": "+ New piece",
+    "placeholder": "Piece title…",
+    "creating": "Creating…",
+    "create": "Create",
+    "cancel": "Cancel"
+  },
+  "explore": {
+    "title": "Explore",
+    "subtitle": "Discover recently published pieces from the community",
+    "allGenres": "All genres",
+    "sortBy": "Sort by",
+    "newest": "Newest",
+    "mostForked": "Most Forked",
+    "noPublished": "No published pieces yet",
+    "noPublishedSubtext": "Check back soon, or be the first to publish in this genre",
+    "previous": "← Previous",
+    "next": "Next →"
+  },
+  "search": {
+    "genre": "Genre",
+    "allGenres": "All genres",
+    "searchForPieces": "Search for pieces",
+    "searchSubtext": "Find by title, author, keyword, genre, or idea",
+    "noResults": "No results found",
+    "noResultsSubtext": "Try different keywords or remove the genre filter",
+    "resultFor": "{count} result for",
+    "resultsFor": "{count} results for",
+    "in": "in"
+  },
+  "pieceCard": {
+    "fork": "{count} fork",
+    "forks": "{count} forks"
+  },
+  "lineage": {
+    "forkedFrom": "Forked from",
+    "by": "by",
+    "startingFrom": "starting from"
+  },
+  "pieceDetail": {
+    "edit": "Edit",
+    "viewBranchTree": "View branch tree",
+    "unknownAuthor": "Unknown Author"
+  },
+  "forkPanel": {
+    "forkFromHere": "Fork from here",
+    "forkFromSection": "Fork from section {n}",
+    "networkError": "Network error"
+  },
+  "editor": {
+    "wordsCount": "{count} words",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "saveError": "Save error",
+    "history": "History",
+    "metadata": "Metadata",
+    "publish": "Publish",
+    "unpublish": "Unpublish",
+    "inherited": "Inherited",
+    "section": "Section {n}",
+    "emptySection": "Empty section",
+    "addSection": "+ Add section",
+    "writePlaceholder": "Write section {n}…"
+  },
+  "metadata": {
+    "panelTitle": "Metadata",
+    "genre": "Genre",
+    "selectGenre": "— Select genre —",
+    "tags": "Tags",
+    "tagsHint": "(Enter or comma to add)",
+    "tagsPlaceholder": "e.g. adventure, mystery",
+    "ideaSummary": "Idea / Summary",
+    "ideaSummaryPlaceholder": "Short description or idea behind this piece…"
+  },
+  "versions": {
+    "title": "Version history",
+    "close": "Close version history",
+    "loading": "Loading versions…",
+    "noVersions": "No saved versions yet.",
+    "version": "Version {n}",
+    "restoreWarning": "Restoring this version will overwrite your current sections. This can't be undone, though the restore itself is recorded as a new version.",
+    "restoring": "Restoring…",
+    "yesRestore": "Yes, restore this version",
+    "cancel": "Cancel",
+    "restore": "Restore this version"
+  },
+  "branchTree": {
+    "title": "Branch tree",
+    "subtitle": "See how this piece and its forks branch off from one another. The highlighted node is the piece you came from.",
+    "noLineage": "No lineage information available",
+    "notAvailable": "No longer available",
+    "forkedFrom": "forked from",
+    "backTo": "← Back to {title}"
+  }
+}

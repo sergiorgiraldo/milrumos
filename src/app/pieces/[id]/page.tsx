@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import { marked } from 'marked';
 import type { Section, PieceMetadata, Profile } from '@/lib/schema';
 import { canFork } from '@/lib/fork';
+import { getServerT } from '@/lib/i18n';
 import ForkPanel from '@/components/ForkPanel';
 import LineageBanner from '@/components/LineageBanner';
 import NavBar from '@/components/NavBar';
@@ -12,7 +13,7 @@ type Props = { params: Promise<{ id: string }> };
 
 export default async function PieceDetailPage({ params }: Props) {
   const { id } = await params;
-  const supabase = await createClient();
+  const [supabase, { t }] = await Promise.all([createClient(), getServerT()]);
 
   const {
     data: { user },
@@ -47,7 +48,7 @@ export default async function PieceDetailPage({ params }: Props) {
 
   const meta = metadata as Pick<PieceMetadata, 'genre' | 'tags' | 'idea_summary'> | null;
   const author = authorProfile as Pick<Profile, 'display_name' | 'username' | 'avatar_url'> | null;
-  const authorName = author?.display_name ?? author?.username ?? 'Unknown Author';
+  const authorName = author?.display_name ?? author?.username ?? t('pieceDetail.unknownAuthor');
 
   const sortedSections = [...(p.sections ?? [])].sort(
     (a: Section, b: Section) => a.ordinal - b.ordinal
@@ -62,7 +63,7 @@ export default async function PieceDetailPage({ params }: Props) {
   );
 
   const publishDate = p.updated_at
-    ? new Date(p.updated_at).toLocaleDateString('en-US', {
+    ? new Date(p.updated_at).toLocaleDateString(undefined, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -81,7 +82,7 @@ export default async function PieceDetailPage({ params }: Props) {
               href={`/pieces/${id}/edit`}
               className="px-4 py-1.5 rounded-lg bg-pale-slate-100 text-pale-slate-700 text-sm font-medium hover:bg-pale-slate-200 transition-colors"
             >
-              Edit
+              {t('pieceDetail.edit')}
             </a>
           ) : undefined
         }
@@ -100,7 +101,7 @@ export default async function PieceDetailPage({ params }: Props) {
                   : 'bg-pale-slate-200 text-pale-slate-500'
               }`}
             >
-              {p.status === 'published' ? 'Published' : 'Draft'}
+              {p.status === 'published' ? t('status.published') : t('status.draft')}
             </span>
           </div>
 
@@ -140,7 +141,7 @@ export default async function PieceDetailPage({ params }: Props) {
             href={`/pieces/${id}/tree`}
             className="inline-flex items-center gap-1.5 mt-4 text-sm font-medium text-air-force-blue-600 hover:text-air-force-blue-800"
           >
-            <span aria-hidden="true">⤷</span> View branch tree
+            <span aria-hidden="true">⤷</span> {t('pieceDetail.viewBranchTree')}
           </a>
 
           {meta?.idea_summary && (

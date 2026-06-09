@@ -4,26 +4,28 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { PieceSummary } from '@/lib/pieces';
 import type { PieceStatus } from '@/lib/schema';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 type Props = { pieces: PieceSummary[] };
 
 function StatusBadge({ status }: { status: PieceStatus }) {
+  const { t } = useTranslation();
   if (status === 'published') {
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-blue-100 text-sky-blue-700">
-        Published
+        {t('status.published')}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pale-slate-100 text-pale-slate-600">
-      Draft
+      {t('status.draft')}
     </span>
   );
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
+  return new Date(iso).toLocaleDateString(undefined, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -32,6 +34,7 @@ function formatDate(iso: string): string {
 
 export default function DashboardTable({ pieces }: Props) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [isPending, startTransition] = useTransition();
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -60,12 +63,12 @@ export default function DashboardTable({ pieces }: Props) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-pale-slate-200 bg-pale-slate-50 text-pale-slate-500 uppercase text-xs tracking-wide">
-            <th className="px-5 py-3 text-left font-semibold">Title</th>
-            <th className="px-5 py-3 text-left font-semibold">Status</th>
-            <th className="px-5 py-3 text-left font-semibold">Last Modified</th>
-            <th className="px-5 py-3 text-right font-semibold">Sections</th>
-            <th className="px-5 py-3 text-right font-semibold">Words</th>
-            <th className="px-5 py-3 text-right font-semibold">Actions</th>
+            <th className="px-5 py-3 text-left font-semibold">{t('table.title')}</th>
+            <th className="px-5 py-3 text-left font-semibold">{t('table.status')}</th>
+            <th className="px-5 py-3 text-left font-semibold">{t('table.lastModified')}</th>
+            <th className="px-5 py-3 text-right font-semibold">{t('table.sections')}</th>
+            <th className="px-5 py-3 text-right font-semibold">{t('table.words')}</th>
+            <th className="px-5 py-3 text-right font-semibold">{t('table.actions')}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-pale-slate-100">
@@ -82,19 +85,19 @@ export default function DashboardTable({ pieces }: Props) {
                 <div className="flex gap-2 justify-end items-center">
                   {confirmingId === piece.id ? (
                     <>
-                      <span className="text-pale-slate-400 text-xs">Delete?</span>
+                      <span className="text-pale-slate-400 text-xs">{t('table.confirmDelete')}</span>
                       <button
                         onClick={() => handleDelete(piece.id)}
                         disabled={loadingId === piece.id}
                         className="px-3 py-1 rounded-lg bg-ruby-red-600 text-white text-xs font-medium hover:bg-ruby-red-700 disabled:opacity-50 transition-colors"
                       >
-                        {loadingId === piece.id ? '…' : 'Yes, delete'}
+                        {loadingId === piece.id ? '…' : t('table.confirmYes')}
                       </button>
                       <button
                         onClick={() => setConfirmingId(null)}
                         className="px-3 py-1 rounded-lg bg-pale-slate-100 text-pale-slate-600 text-xs hover:bg-pale-slate-200 transition-colors"
                       >
-                        Cancel
+                        {t('table.cancel')}
                       </button>
                     </>
                   ) : (
@@ -103,20 +106,20 @@ export default function DashboardTable({ pieces }: Props) {
                         onClick={() => router.push(`/pieces/${piece.id}/edit`)}
                         className="px-3 py-1 rounded-lg bg-air-force-blue-100 text-air-force-blue-700 text-xs font-medium hover:bg-air-force-blue-200 transition-colors"
                       >
-                        Edit
+                        {t('table.edit')}
                       </button>
                       <button
                         onClick={() => toggleStatus(piece.id, piece.status)}
                         disabled={loadingId === piece.id}
                         className="px-3 py-1 rounded-lg bg-pale-slate-100 text-pale-slate-600 text-xs font-medium hover:bg-pale-slate-200 disabled:opacity-50 transition-colors"
                       >
-                        {loadingId === piece.id ? '…' : piece.status === 'draft' ? 'Publish' : 'Unpublish'}
+                        {loadingId === piece.id ? '…' : piece.status === 'draft' ? t('table.publish') : t('table.unpublish')}
                       </button>
                       <button
                         onClick={() => setConfirmingId(piece.id)}
                         className="px-3 py-1 rounded-lg bg-ruby-red-50 text-ruby-red-600 text-xs font-medium hover:bg-ruby-red-100 transition-colors"
                       >
-                        Delete
+                        {t('table.delete')}
                       </button>
                     </>
                   )}

@@ -1,4 +1,7 @@
+'use client';
+
 import type { BranchTreeNode } from '@/lib/branchTree';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 interface Props {
   root: BranchTreeNode;
@@ -6,6 +9,7 @@ interface Props {
 }
 
 function NodeCard({ node, isCurrent }: { node: BranchTreeNode; isCurrent: boolean }) {
+  const { t } = useTranslation();
   const baseClasses =
     'inline-flex flex-col gap-0.5 rounded-xl border px-4 py-2.5 max-w-xs transition-colors';
 
@@ -13,7 +17,7 @@ function NodeCard({ node, isCurrent }: { node: BranchTreeNode; isCurrent: boolea
     return (
       <div className={`${baseClasses} border-dashed border-pale-slate-300 bg-pale-slate-100 text-pale-slate-400`}>
         <span className="text-sm font-medium italic truncate">{node.title}</span>
-        <span className="text-xs">No longer available</span>
+        <span className="text-xs">{t('branchTree.notAvailable')}</span>
       </div>
     );
   }
@@ -34,7 +38,7 @@ function NodeCard({ node, isCurrent }: { node: BranchTreeNode; isCurrent: boolea
         {node.authorName}
         {node.status === 'draft' && (
           <span className="ml-1.5 px-1.5 py-0.5 rounded-full bg-pale-slate-200 text-pale-slate-500 text-[10px] font-medium align-middle">
-            Draft
+            {t('status.draft')}
           </span>
         )}
       </span>
@@ -51,13 +55,14 @@ function TreeBranch({
   currentPieceId: string;
   edgeLabel?: string | null;
 }) {
+  const { t } = useTranslation();
   const isCurrent = node.id === currentPieceId;
 
   return (
     <li>
       {edgeLabel && (
         <p className="text-xs text-pale-slate-400 mb-1.5">
-          ⤷ forked from &ldquo;{edgeLabel}&rdquo;
+          ⤷ {t('branchTree.forkedFrom')} &ldquo;{edgeLabel}&rdquo;
         </p>
       )}
       <NodeCard node={node} isCurrent={isCurrent} />

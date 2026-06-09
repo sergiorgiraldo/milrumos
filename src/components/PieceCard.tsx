@@ -1,17 +1,26 @@
+'use client';
+
 import type { ExplorePiece } from '@/lib/explore';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 interface Props {
   piece: ExplorePiece;
 }
 
 export default function PieceCard({ piece }: Props) {
+  const { t } = useTranslation();
+
   const date = piece.updated_at
-    ? new Date(piece.updated_at).toLocaleDateString('en-US', {
+    ? new Date(piece.updated_at).toLocaleDateString(undefined, {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
       })
     : '';
+
+  const forkLabel = piece.fork_count === 1
+    ? t('pieceCard.fork', { count: piece.fork_count })
+    : t('pieceCard.forks', { count: piece.fork_count });
 
   return (
     <a
@@ -49,9 +58,7 @@ export default function PieceCard({ piece }: Props) {
 
       <div className="mt-auto pt-4 flex items-center gap-1.5 text-xs text-pale-slate-400">
         <span aria-hidden="true">⤷</span>
-        <span>
-          {piece.fork_count} fork{piece.fork_count !== 1 ? 's' : ''}
-        </span>
+        <span>{forkLabel}</span>
       </div>
     </a>
   );
