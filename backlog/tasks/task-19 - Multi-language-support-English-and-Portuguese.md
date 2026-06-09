@@ -1,9 +1,10 @@
 ---
 id: TASK-19
 title: 'Multi-language support: English and Portuguese'
-status: In Progress
+status: Done
 assignee: []
 created_date: '2026-06-09 07:26'
+updated_date: '2026-06-09 07:33'
 labels: []
 dependencies: []
 priority: high
@@ -18,9 +19,9 @@ Implement i18n with EN + PT. Translation tables in JSON files. Extensible for fu
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 All UI text comes from locale JSON files
-- [ ] #2 English and Portuguese fully translated
-- [ ] #3 Language switcher in navbar persists choice across reloads
-- [ ] #4 Adding a new language requires only a new JSON file + one config line
-- [ ] #5 Unit tests for t() interpolation and context
+- [x] #1 All UI text comes from locale JSON files
+- [x] #2 English and Portuguese fully translated
+- [x] #3 Language switcher in navbar persists choice across reloads
+- [x] #4 Adding a new language requires only a new JSON file + one config line
+- [x] #5 Unit tests for t() interpolation and context
 <!-- AC:END -->
