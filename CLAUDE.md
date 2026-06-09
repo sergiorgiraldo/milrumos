@@ -32,6 +32,8 @@ I will supply a goal to implement a task from backlog.md. When the goal is satis
 
 feat: <TASK SUMMARY>
 
+DO NOT BYPASS MY GIT HOOKS
+
 ## How the website works
 
 1. Writer will write their piece
@@ -124,10 +126,6 @@ Use Backlog.md for backlog management
 
 Always do the PR'S to DEVELOP branch. PR to main only by me.
 
-## Tools
-
-When testing/compiling, dont use head or tail, always use hson (https://docs.rs/headson/latest/headson/)
-
 <!-- PROJECT WOW END -->
 
 
@@ -155,6 +153,9 @@ These guides cover:
 - MCP tools reference
 
 You MUST read the overview resource to understand the complete workflow. The information is NOT summarized here.
+
+When finishing a task always do with this command:
+`backlog task edit -s DONE <TASK ID>`
 
 </CRITICAL_INSTRUCTION>
 

@@ -4,12 +4,14 @@ import { createClient } from '@/lib/supabase/client';
 import { signInWithGoogle, signInWithGitHub } from '@/lib/auth';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 function LoginForm() {
   const searchParams = useSearchParams();
   const error = searchParams.get('error');
   const returnTo = searchParams.get('returnTo') ?? undefined;
   const supabase = createClient();
+  const { t } = useTranslation();
 
   async function handleGoogle() {
     await signInWithGoogle(supabase, returnTo);
@@ -24,12 +26,12 @@ function LoginForm() {
       <div className="bg-white rounded-2xl shadow-lg p-12 max-w-md w-full text-center">
         <h1 className="text-4xl font-bold text-ruby-red-600 mb-2">Milrumos</h1>
         <p className="text-pale-slate-600 text-sm mb-8">
-          Collaborative writing. Branch from any point.
+          {t('app.tagline')}
         </p>
 
         {error && (
           <p className="mb-6 text-ruby-red-600 text-sm bg-ruby-red-50 rounded-lg px-4 py-2">
-            Authentication failed. Try again.
+            {t('auth.authFailed')}
           </p>
         )}
 
@@ -39,7 +41,7 @@ function LoginForm() {
             className="flex items-center justify-center gap-3 w-full px-6 py-3 rounded-xl bg-white border-2 border-pale-slate-200 text-pale-slate-800 font-medium hover:border-air-force-blue-400 hover:bg-air-force-blue-50 transition-colors"
           >
             <GoogleIcon />
-            Continue with Google
+            {t('auth.continueWithGoogle')}
           </button>
 
           <button
@@ -47,7 +49,7 @@ function LoginForm() {
             className="flex items-center justify-center gap-3 w-full px-6 py-3 rounded-xl bg-pale-slate-800 text-white font-medium hover:bg-pale-slate-900 transition-colors"
           >
             <GitHubIcon />
-            Continue with GitHub
+            {t('auth.continueWithGitHub')}
           </button>
         </div>
       </div>

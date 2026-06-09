@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 export interface ForkSection {
   id: string;
@@ -17,6 +18,7 @@ interface Props {
 
 export default function ForkPanel({ sections, pieceId, showForkButtons }: Props) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [forking, setForking] = useState(false);
   const [forkError, setForkError] = useState<string | null>(null);
@@ -32,13 +34,13 @@ export default function ForkPanel({ sections, pieceId, showForkButtons }: Props)
       });
       if (!res.ok) {
         const body = await res.json();
-        setForkError(body.error ?? 'Fork failed');
+        setForkError(body.error ?? t('forkPanel.networkError'));
         return;
       }
       const newPiece = await res.json();
       router.push(`/pieces/${newPiece.id}/edit`);
     } catch {
-      setForkError('Network error');
+      setForkError(t('forkPanel.networkError'));
     } finally {
       setForking(false);
     }
@@ -84,10 +86,10 @@ export default function ForkPanel({ sections, pieceId, showForkButtons }: Props)
                   onBlur={() => setHoveredIndex(null)}
                   onClick={() => handleFork(section.id)}
                   disabled={forking}
-                  aria-label={`Fork from section ${index + 1}`}
+                  aria-label={t('forkPanel.forkFromSection', { n: index + 1 })}
                   className="shrink-0 mt-1 px-3 py-1.5 rounded-lg border border-air-force-blue-300 text-air-force-blue-600 text-xs font-medium hover:bg-air-force-blue-50 hover:border-air-force-blue-400 transition-colors disabled:opacity-50 whitespace-nowrap"
                 >
-                  Fork from here
+                  {t('forkPanel.forkFromHere')}
                 </button>
               )}
             </div>

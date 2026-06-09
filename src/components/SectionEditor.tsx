@@ -4,6 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from 'tiptap-markdown';
 import { useEffect, useRef } from 'react';
+import EditorToolbar from './EditorToolbar';
 
 interface Props {
   initialContent: string;
@@ -40,9 +41,12 @@ export default function SectionEditor({ initialContent, onChange, placeholder }:
   }
 
   return (
-    <EditorContent
-      editor={editor}
-      aria-label={placeholder ?? 'Section content'}
-    />
+    <div>
+      <EditorToolbar editor={editor} />
+      <EditorContent
+        editor={editor}
+        aria-label={placeholder ?? 'Section content'}
+      />
+    </div>
   );
 }

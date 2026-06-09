@@ -3,12 +3,13 @@ import { redirect } from 'next/navigation';
 import { searchPieces } from '@/lib/search';
 import NavBar from '@/components/NavBar';
 import { GENRES } from '@/lib/schema';
+import { getServerT } from '@/lib/i18n';
 
 type Props = { searchParams: Promise<{ q?: string; genre?: string }> };
 
 export default async function SearchPage({ searchParams }: Props) {
   const { q = '', genre } = await searchParams;
-  const supabase = await createClient();
+  const [supabase, { t }] = await Promise.all([createClient(), getServerT()]);
 
   const {
     data: { user },
@@ -28,7 +29,7 @@ export default async function SearchPage({ searchParams }: Props) {
         <aside className="w-52 shrink-0">
           <div className="bg-white rounded-xl border border-pale-slate-200 p-4">
             <h2 className="text-xs font-semibold text-pale-slate-600 uppercase tracking-wide mb-3">
-              Genre
+              {t('search.genre')}
             </h2>
             <ul className="space-y-1">
               <li>
@@ -40,7 +41,7 @@ export default async function SearchPage({ searchParams }: Props) {
                       : 'text-pale-slate-600 hover:bg-pale-slate-50'
                   }`}
                 >
-                  All genres
+                  {t('search.allGenres')}
                 </a>
               </li>
               {GENRES.map((g) => (
@@ -65,18 +66,18 @@ export default async function SearchPage({ searchParams }: Props) {
         <main className="flex-1 min-w-0">
           {!hasQuery && (
             <div className="text-center py-20 bg-white rounded-xl border border-pale-slate-200">
-              <p className="text-pale-slate-500 text-lg font-medium">Search for pieces</p>
+              <p className="text-pale-slate-500 text-lg font-medium">{t('search.searchForPieces')}</p>
               <p className="text-pale-slate-400 text-sm mt-1">
-                Find by title, author, keyword, genre, or idea
+                {t('search.searchSubtext')}
               </p>
             </div>
           )}
 
           {hasQuery && results.length === 0 && (
             <div className="text-center py-20 bg-white rounded-xl border border-pale-slate-200">
-              <p className="text-pale-slate-500 text-lg font-medium">No results found</p>
+              <p className="text-pale-slate-500 text-lg font-medium">{t('search.noResults')}</p>
               <p className="text-pale-slate-400 text-sm mt-1">
-                Try different keywords or remove the genre filter
+                {t('search.noResultsSubtext')}
               </p>
             </div>
           )}
@@ -84,18 +85,21 @@ export default async function SearchPage({ searchParams }: Props) {
           {hasQuery && results.length > 0 && (
             <div className="space-y-4">
               <p className="text-sm text-pale-slate-500">
-                {results.length} result{results.length !== 1 ? 's' : ''} for{' '}
+                {results.length === 1
+                  ? t('search.resultFor', { count: results.length })
+                  : t('search.resultsFor', { count: results.length })}{' '}
                 <span className="font-medium text-pale-slate-700">&ldquo;{q}&rdquo;</span>
                 {genre && (
                   <>
-                    {' '}in <span className="font-medium text-pale-slate-700">{genre}</span>
+                    {' '}{t('search.in')}{' '}
+                    <span className="font-medium text-pale-slate-700">{genre}</span>
                   </>
                 )}
               </p>
 
               {results.map((r) => {
                 const date = r.updated_at
-                  ? new Date(r.updated_at).toLocaleDateString('en-US', {
+                  ? new Date(r.updated_at).toLocaleDateString(undefined, {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',

@@ -2,6 +2,7 @@
 
 import { useState, KeyboardEvent } from 'react';
 import { GENRES } from '@/lib/schema';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 interface Props {
   genre: string | null;
@@ -20,6 +21,7 @@ export default function MetadataPanel({
   onTagsChange,
   onSummaryChange,
 }: Props) {
+  const { t } = useTranslation();
   const [tagInput, setTagInput] = useState('');
 
   const commitTag = () => {
@@ -46,19 +48,19 @@ export default function MetadataPanel({
   return (
     <div className="p-4 space-y-5">
       <h3 className="text-sm font-semibold text-pale-slate-700 uppercase tracking-wide">
-        Metadata
+        {t('metadata.panelTitle')}
       </h3>
 
       {/* Genre */}
       <div>
-        <label className="block text-xs font-medium text-pale-slate-600 mb-1">Genre</label>
+        <label className="block text-xs font-medium text-pale-slate-600 mb-1">{t('metadata.genre')}</label>
         <select
           value={genre ?? ''}
           onChange={(e) => onGenreChange(e.target.value || null)}
           className="w-full px-3 py-1.5 rounded-lg border border-pale-slate-200 text-sm text-pale-slate-800 bg-white focus:outline-none focus:border-air-force-blue-400"
-          aria-label="Genre"
+          aria-label={t('metadata.genre')}
         >
-          <option value="">— Select genre —</option>
+          <option value="">{t('metadata.selectGenre')}</option>
           {GENRES.map((g) => (
             <option key={g} value={g}>
               {g}
@@ -70,7 +72,7 @@ export default function MetadataPanel({
       {/* Tags */}
       <div>
         <label className="block text-xs font-medium text-pale-slate-600 mb-1">
-          Tags <span className="text-pale-slate-400 font-normal">(Enter or comma to add)</span>
+          {t('metadata.tags')} <span className="text-pale-slate-400 font-normal">{t('metadata.tagsHint')}</span>
         </label>
         <div className="rounded-lg border border-pale-slate-200 px-2 py-1.5 flex flex-wrap gap-1.5 focus-within:border-air-force-blue-400 bg-white min-h-[38px]">
           {tags.map((tag) => (
@@ -102,23 +104,23 @@ export default function MetadataPanel({
             }}
             onKeyDown={handleTagKeyDown}
             onBlur={commitTag}
-            placeholder={tags.length === 0 ? 'e.g. adventure, mystery' : ''}
+            placeholder={tags.length === 0 ? t('metadata.tagsPlaceholder') : ''}
             className="flex-1 min-w-[80px] text-sm focus:outline-none bg-transparent"
-            aria-label="Add tag"
+            aria-label={t('metadata.tags')}
           />
         </div>
       </div>
 
       {/* Idea / Summary */}
       <div>
-        <label className="block text-xs font-medium text-pale-slate-600 mb-1">Idea / Summary</label>
+        <label className="block text-xs font-medium text-pale-slate-600 mb-1">{t('metadata.ideaSummary')}</label>
         <textarea
           value={ideaSummary ?? ''}
           onChange={(e) => onSummaryChange(e.target.value)}
           rows={4}
-          placeholder="Short description or idea behind this piece…"
+          placeholder={t('metadata.ideaSummaryPlaceholder')}
           className="w-full px-3 py-2 rounded-lg border border-pale-slate-200 text-sm text-pale-slate-800 resize-none focus:outline-none focus:border-air-force-blue-400 bg-white"
-          aria-label="Idea or summary"
+          aria-label={t('metadata.ideaSummary')}
         />
       </div>
     </div>

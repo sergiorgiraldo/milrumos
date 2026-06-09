@@ -1,0 +1,135 @@
+{
+  "app": {
+    "title": "Milrumos — Escrita Colaborativa",
+    "description": "Escreva, ramifique, construa sobre o trabalho uns dos outros.",
+    "tagline": "Escrita colaborativa. Ramifique de qualquer ponto."
+  },
+  "nav": {
+    "explore": "Explorar",
+    "searchPlaceholder": "Buscar peças…"
+  },
+  "auth": {
+    "signOut": "Sair",
+    "authFailed": "Falha na autenticação. Tente novamente.",
+    "continueWithGoogle": "Continuar com Google",
+    "continueWithGitHub": "Continuar com GitHub"
+  },
+  "dashboard": {
+    "myPieces": "Minhas Peças",
+    "noPiecesYet": "Nenhuma peça ainda.",
+    "noPiecesSubtext": "Comece a escrever. Ramifique de qualquer coisa. Construa junto."
+  },
+  "table": {
+    "title": "Título",
+    "status": "Status",
+    "lastModified": "Última Modificação",
+    "sections": "Seções",
+    "words": "Palavras",
+    "actions": "Ações",
+    "confirmDelete": "Deletar?",
+    "confirmYes": "Sim, deletar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "publish": "Publicar",
+    "unpublish": "Despublicar",
+    "delete": "Deletar"
+  },
+  "status": {
+    "published": "Publicado",
+    "draft": "Rascunho"
+  },
+  "newPiece": {
+    "button": "+ Nova peça",
+    "placeholder": "Título da peça…",
+    "creating": "Criando…",
+    "create": "Criar",
+    "cancel": "Cancelar"
+  },
+  "explore": {
+    "title": "Explorar",
+    "subtitle": "Descubra peças recentemente publicadas pela comunidade",
+    "allGenres": "Todos os gêneros",
+    "sortBy": "Ordenar por",
+    "newest": "Mais recentes",
+    "mostForked": "Mais ramificados",
+    "noPublished": "Nenhuma peça publicada ainda",
+    "noPublishedSubtext": "Volte em breve, ou seja o primeiro a publicar neste gênero",
+    "previous": "← Anterior",
+    "next": "Próximo →"
+  },
+  "search": {
+    "genre": "Gênero",
+    "allGenres": "Todos os gêneros",
+    "searchForPieces": "Buscar peças",
+    "searchSubtext": "Encontre por título, autor, palavra-chave, gênero ou ideia",
+    "noResults": "Nenhum resultado encontrado",
+    "noResultsSubtext": "Tente palavras-chave diferentes ou remova o filtro de gênero",
+    "resultFor": "{count} resultado para",
+    "resultsFor": "{count} resultados para",
+    "in": "em"
+  },
+  "pieceCard": {
+    "fork": "{count} ramificação",
+    "forks": "{count} ramificações"
+  },
+  "lineage": {
+    "forkedFrom": "Ramificado de",
+    "by": "por",
+    "startingFrom": "a partir de"
+  },
+  "pieceDetail": {
+    "edit": "Editar",
+    "viewBranchTree": "Ver árvore de ramificações",
+    "unknownAuthor": "Autor Desconhecido"
+  },
+  "forkPanel": {
+    "forkFromHere": "Ramificar daqui",
+    "forkFromSection": "Ramificar da seção {n}",
+    "networkError": "Erro de rede"
+  },
+  "editor": {
+    "wordsCount": "{count} palavras",
+    "saving": "Salvando…",
+    "saved": "Salvo",
+    "saveError": "Erro ao salvar",
+    "history": "Histórico",
+    "metadata": "Metadados",
+    "publish": "Publicar",
+    "unpublish": "Despublicar",
+    "inherited": "Herdado",
+    "section": "Seção {n}",
+    "emptySection": "Seção vazia",
+    "addSection": "+ Adicionar seção",
+    "writePlaceholder": "Escreva a seção {n}…"
+  },
+  "metadata": {
+    "panelTitle": "Metadados",
+    "genre": "Gênero",
+    "selectGenre": "— Selecione o gênero —",
+    "tags": "Etiquetas",
+    "tagsHint": "(Enter ou vírgula para adicionar)",
+    "tagsPlaceholder": "ex: aventura, mistério",
+    "ideaSummary": "Ideia / Resumo",
+    "ideaSummaryPlaceholder": "Descrição curta ou ideia por trás desta peça…"
+  },
+  "versions": {
+    "title": "Histórico de versões",
+    "close": "Fechar histórico de versões",
+    "loading": "Carregando versões…",
+    "noVersions": "Nenhuma versão salva ainda.",
+    "version": "Versão {n}",
+    "restoreWarning": "Restaurar esta versão vai sobrescrever suas seções atuais. Isso não pode ser desfeito, mas a restauração em si é registrada como uma nova versão.",
+    "restoring": "Restaurando…",
+    "yesRestore": "Sim, restaurar esta versão",
+    "cancel": "Cancelar",
+    "restore": "Restaurar esta versão"
+  },
+  "branchTree": {
+    "title": "Árvore de ramificações",
+    "subtitle": "Veja como esta peça e suas ramificações se desenvolvem. O nó destacado é a peça de onde você veio.",
+    "noLineage": "Nenhuma informação de linhagem disponível",
+    "notAvailable": "Não está mais disponível",
+    "forkedFrom": "ramificado de",
+    "backTo": "← Voltar para {title}"
+  }
+}

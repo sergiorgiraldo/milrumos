@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import SectionEditor from './SectionEditor';
 import MetadataPanel from './MetadataPanel';
+import VersionHistoryPanel from './VersionHistoryPanel';
+import { useTranslation } from '@/contexts/LanguageContext';
 import {
   SectionData,
   addSection,
@@ -42,6 +44,7 @@ export default function PieceEditor({
   inheritedCount = 0,
   initialMetadata,
 }: Props) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState(initialTitle);
   const [sections, setSections] = useState<SectionData[]>(
     initialSections.length > 0
@@ -53,8 +56,8 @@ export default function PieceEditor({
   const [publishing, setPublishing] = useState(false);
   const [editingTitleIndex, setEditingTitleIndex] = useState<number | null>(null);
   const [showMetadata, setShowMetadata] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
-  // Metadata state
   const [genre, setGenre] = useState<string | null>(initialMetadata?.genre ?? null);
   const [tags, setTags] = useState<string[]>(initialMetadata?.tags ?? []);
   const [ideaSummary, setIdeaSummary] = useState<string | null>(initialMetadata?.idea_summary ?? null);
@@ -63,7 +66,6 @@ export default function PieceEditor({
   const titleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const metadataTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Keep refs for latest metadata values to use in debounced callback
   const genreRef = useRef(genre);
   const tagsRef = useRef(tags);
   const summaryRef = useRef(ideaSummary);
@@ -203,8 +205,8 @@ export default function PieceEditor({
     scheduleMetadataSave();
   };
 
-  const handleTagsChange = (t: string[]) => {
-    setTags(t);
+  const handleTagsChange = (newTags: string[]) => {
+    setTags(newTags);
     scheduleMetadataSave();
   };
 
@@ -214,6 +216,17 @@ export default function PieceEditor({
   };
 
   const totalWords = sectionsWordCount(sections);
+
+  const saveLabel =
+    saveState === 'saving'
+      ? t('editor.saving')
+      : saveState === 'saved'
+      ? t('editor.saved')
+      : saveState === 'error'
+      ? t('editor.saveError')
+      : status === 'draft'
+      ? t('status.draft')
+      : '';
 
   return (
     <div className="min-h-screen bg-pale-slate-50 flex flex-col">
@@ -231,12 +244,14 @@ export default function PieceEditor({
             value={title}
             onChange={(e) => handleTitleChange(e.target.value)}
             className="font-semibold text-pale-slate-800 bg-transparent border-b border-transparent hover:border-pale-slate-300 focus:border-air-force-blue-400 focus:outline-none min-w-[200px] truncate"
-            aria-label="Piece title"
+            aria-label={t('table.title')}
           />
         </div>
 
         <div className="flex items-center gap-4 shrink-0">
-          <span className="text-pale-slate-400 text-sm">{totalWords} words</span>
+          <span className="text-pale-slate-400 text-sm">
+            {t('editor.wordsCount', { count: totalWords })}
+          </span>
 
           <span
             className={`text-xs px-2 py-1 rounded-full ${
@@ -249,15 +264,7 @@ export default function PieceEditor({
                 : 'text-pale-slate-400'
             }`}
           >
-            {saveState === 'saving'
-              ? 'Saving…'
-              : saveState === 'saved'
-              ? 'Saved'
-              : saveState === 'error'
-              ? 'Save error'
-              : status === 'draft'
-              ? 'Draft'
-              : ''}
+            {saveLabel}
           </span>
 
           <span
@@ -267,8 +274,16 @@ export default function PieceEditor({
                 : 'bg-pale-slate-100 text-pale-slate-500'
             }`}
           >
-            {status === 'published' ? 'Published' : 'Draft'}
+            {status === 'published' ? t('status.published') : t('status.draft')}
           </span>
+
+          <button
+            onClick={() => setShowHistory(true)}
+            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-pale-slate-100 text-pale-slate-600 hover:bg-pale-slate-200 transition-colors"
+            aria-label={t('versions.title')}
+          >
+            {t('editor.history')}
+          </button>
 
           <button
             onClick={() => setShowMetadata((v) => !v)}
@@ -277,9 +292,9 @@ export default function PieceEditor({
                 ? 'bg-air-force-blue-100 text-air-force-blue-700'
                 : 'bg-pale-slate-100 text-pale-slate-600 hover:bg-pale-slate-200'
             }`}
-            aria-label="Toggle metadata panel"
+            aria-label={t('metadata.panelTitle')}
           >
-            Metadata
+            {t('editor.metadata')}
           </button>
 
           <button
@@ -291,7 +306,7 @@ export default function PieceEditor({
                 : 'bg-pale-slate-200 text-pale-slate-700 hover:bg-pale-slate-300'
             }`}
           >
-            {publishing ? '…' : status === 'draft' ? 'Publish' : 'Unpublish'}
+            {publishing ? '…' : status === 'draft' ? t('editor.publish') : t('editor.unpublish')}
           </button>
         </div>
       </header>
@@ -337,7 +352,7 @@ export default function PieceEditor({
 
                     {inherited && (
                       <span className="text-xs px-2 py-0.5 rounded-full bg-pale-slate-200 text-pale-slate-500 font-medium shrink-0">
-                        Inherited
+                        {t('editor.inherited')}
                       </span>
                     )}
 
@@ -359,15 +374,15 @@ export default function PieceEditor({
                           onClick={() => !inherited && setEditingTitleIndex(index)}
                           disabled={inherited}
                           className="text-sm font-medium text-pale-slate-600 hover:text-pale-slate-800 truncate max-w-full text-left disabled:cursor-default"
-                          aria-label={`Section ${index + 1} title`}
+                          aria-label={t('editor.section', { n: index + 1 })}
                         >
-                          {section.title ?? `Section ${index + 1}`}
+                          {section.title ?? t('editor.section', { n: index + 1 })}
                         </button>
                       )}
                     </div>
 
                     <span className="text-xs text-pale-slate-400 shrink-0">
-                      {countWords(section.content)} words
+                      {t('editor.wordsCount', { count: countWords(section.content) })}
                     </span>
 
                     {!inherited && (
@@ -384,13 +399,13 @@ export default function PieceEditor({
 
                   {inherited ? (
                     <div className="px-4 py-4 text-pale-slate-500 text-sm whitespace-pre-wrap leading-relaxed select-none">
-                      {section.content || <span className="italic text-pale-slate-400">Empty section</span>}
+                      {section.content || <span className="italic text-pale-slate-400">{t('editor.emptySection')}</span>}
                     </div>
                   ) : (
                     <SectionEditor
                       initialContent={section.content}
                       onChange={(md) => handleContentChange(index, md)}
-                      placeholder={`Write section ${index + 1}…`}
+                      placeholder={t('editor.writePlaceholder', { n: index + 1 })}
                     />
                   )}
                 </div>
@@ -400,9 +415,9 @@ export default function PieceEditor({
             <button
               onClick={handleAddSection}
               className="w-full py-3 rounded-xl border-2 border-dashed border-pale-slate-300 text-pale-slate-500 hover:border-air-force-blue-400 hover:text-air-force-blue-600 transition-colors text-sm font-medium"
-              aria-label="Add section"
+              aria-label={t('editor.addSection')}
             >
-              + Add section
+              {t('editor.addSection')}
             </button>
           </div>
         </main>
@@ -421,6 +436,8 @@ export default function PieceEditor({
           </aside>
         )}
       </div>
+
+      {showHistory && <VersionHistoryPanel pieceId={pieceId} onClose={() => setShowHistory(false)} />}
     </div>
   );
 }
