@@ -57,6 +57,11 @@ export default function PieceEditor({
   const [editingTitleIndex, setEditingTitleIndex] = useState<number | null>(null);
   const [showMetadata, setShowMetadata] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [sectionKeys, setSectionKeys] = useState<string[]>(() =>
+    (initialSections.length > 0 ? initialSections : [{ ordinal: 1, title: null, content: '' }]).map(
+      (s) => s.id ?? crypto.randomUUID()
+    )
+  );
 
   const [genre, setGenre] = useState<string | null>(initialMetadata?.genre ?? null);
   const [tags, setTags] = useState<string[]>(initialMetadata?.tags ?? []);
@@ -157,24 +162,35 @@ export default function PieceEditor({
   const handleAddSection = () => {
     const next = addSection(sections);
     setSections(next);
+    setSectionKeys((k) => [...k, crypto.randomUUID()]);
     scheduleSectionsSave(next);
   };
 
   const handleDeleteSection = (index: number) => {
     const next = deleteSection(sections, index);
     setSections(next);
+    setSectionKeys((k) => k.filter((_, i) => i !== index));
     scheduleSectionsSave(next);
+  };
+
+  const reorderKeys = (keys: string[], from: number, to: number): string[] => {
+    const result = [...keys];
+    const [moved] = result.splice(from, 1);
+    result.splice(to, 0, moved);
+    return result;
   };
 
   const handleMoveUp = (index: number) => {
     const next = moveSection(sections, index, index - 1);
     setSections(next);
+    setSectionKeys((k) => reorderKeys(k, index, index - 1));
     scheduleSectionsSave(next);
   };
 
   const handleMoveDown = (index: number) => {
     const next = moveSection(sections, index, index + 1);
     setSections(next);
+    setSectionKeys((k) => reorderKeys(k, index, index + 1));
     scheduleSectionsSave(next);
   };
 
@@ -320,7 +336,7 @@ export default function PieceEditor({
 
               return (
                 <div
-                  key={`${section.ordinal}-${index}`}
+                  key={sectionKeys[index]}
                   className={`rounded-xl shadow-sm border ${
                     inherited
                       ? 'bg-pale-slate-50 border-pale-slate-200 opacity-80'
