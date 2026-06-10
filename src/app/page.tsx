@@ -8,6 +8,10 @@ import NewPieceButton from '@/components/NewPieceButton';
 import DashboardTable from '@/components/DashboardTable';
 import NavBar from '@/components/NavBar';
 
+// Always render fresh per-request: this page reads the current session and
+// must never serve one user's "My Pieces" list to a different logged-in user.
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const supabase = await createClient();
   const {

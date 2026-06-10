@@ -46,7 +46,7 @@ function LoginForm() {
 
           <button
             onClick={handleGitHub}
-            className="flex items-center justify-center gap-3 w-full px-6 py-3 rounded-xl bg-pale-slate-800 text-white font-medium hover:bg-pale-slate-900 transition-colors"
+            className="flex items-center justify-center gap-3 w-full px-6 py-3 rounded-xl bg-white border-2 border-pale-slate-200 text-pale-slate-800 font-medium hover:border-air-force-blue-400 hover:bg-air-force-blue-50 transition-colors"
           >
             <GitHubIcon />
             {t('auth.continueWithGitHub')}
