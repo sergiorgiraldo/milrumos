@@ -41,6 +41,17 @@ export async function signOut(supabase: SupabaseClient) {
   return supabase.auth.signOut();
 }
 
+/**
+ * Restricts post-login redirect targets to same-site relative paths.
+ * Rejects absolute URLs, protocol-relative "//evil.com" paths, and
+ * "@evil.com" userinfo tricks that would otherwise turn `${origin}${next}`
+ * into a link to another host.
+ */
+export function sanitizeRedirectPath(next: string | null | undefined): string {
+  if (!next || !next.startsWith('/') || next.startsWith('//')) return '/';
+  return next;
+}
+
 function getBaseUrl() {
   if (typeof window !== 'undefined') return window.location.origin;
   return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';

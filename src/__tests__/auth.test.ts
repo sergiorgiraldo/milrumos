@@ -1,4 +1,4 @@
-import { upsertProfile, signInWithGoogle, signInWithGitHub, signOut } from '@/lib/auth';
+import { upsertProfile, signInWithGoogle, signInWithGitHub, signOut, sanitizeRedirectPath } from '@/lib/auth';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 
 function makeUser(overrides: Partial<User> = {}): User {
@@ -116,5 +116,34 @@ describe('signOut', () => {
     const client = makeSupabase();
     await signOut(client);
     expect((client as ReturnType<typeof makeSupabase>)._signOut).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('sanitizeRedirectPath', () => {
+  it('allows a plain relative path', () => {
+    expect(sanitizeRedirectPath('/dashboard')).toBe('/dashboard');
+  });
+
+  it('allows a relative path with query string', () => {
+    expect(sanitizeRedirectPath('/pieces/123?tab=history')).toBe('/pieces/123?tab=history');
+  });
+
+  it('falls back to "/" for null or empty input', () => {
+    expect(sanitizeRedirectPath(null)).toBe('/');
+    expect(sanitizeRedirectPath(undefined)).toBe('/');
+    expect(sanitizeRedirectPath('')).toBe('/');
+  });
+
+  it('rejects absolute URLs', () => {
+    expect(sanitizeRedirectPath('https://evil.com')).toBe('/');
+    expect(sanitizeRedirectPath('http://evil.com/phish')).toBe('/');
+  });
+
+  it('rejects protocol-relative paths', () => {
+    expect(sanitizeRedirectPath('//evil.com')).toBe('/');
+  });
+
+  it('rejects userinfo "@" host-confusion paths', () => {
+    expect(sanitizeRedirectPath('@evil.com')).toBe('/');
   });
 });

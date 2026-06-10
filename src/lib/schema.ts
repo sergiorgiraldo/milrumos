@@ -91,24 +91,31 @@ export interface RlsRule {
   operation: 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'ALL';
   policy: string;
   condition: string;
+  /**
+   * Postgres role(s) the policy applies `to`. 'public' means no `to` clause
+   * (every role, including `anon`); the row-level `condition` is what
+   * restricts access in that case. 'authenticated' means the policy carries
+   * an explicit `to authenticated` clause, so `anon` gets no rows at all.
+   */
+  roles: ('public' | 'authenticated')[];
 }
 
 export const RLS_RULES: RlsRule[] = [
-  { table: 'profiles', operation: 'ALL',    policy: 'owner full access',       condition: 'auth.uid() = id' },
-  { table: 'profiles', operation: 'SELECT', policy: 'public read',              condition: 'true' },
+  { table: 'profiles', operation: 'ALL',    policy: 'owner full access',       condition: 'auth.uid() = id', roles: ['public'] },
+  { table: 'profiles', operation: 'SELECT', policy: 'public read',              condition: 'true', roles: ['authenticated'] },
 
-  { table: 'pieces',   operation: 'ALL',    policy: 'owner full access',        condition: 'auth.uid() = author_id' },
-  { table: 'pieces',   operation: 'SELECT', policy: 'public read published',    condition: "status = 'published'" },
+  { table: 'pieces',   operation: 'ALL',    policy: 'owner full access',        condition: 'auth.uid() = author_id', roles: ['public'] },
+  { table: 'pieces',   operation: 'SELECT', policy: 'public read published',    condition: "status = 'published'", roles: ['authenticated'] },
 
-  { table: 'sections', operation: 'ALL',    policy: 'owner full access',        condition: 'auth.uid() = piece.author_id' },
-  { table: 'sections', operation: 'SELECT', policy: 'public read published',    condition: "piece.status = 'published'" },
+  { table: 'sections', operation: 'ALL',    policy: 'owner full access',        condition: 'auth.uid() = piece.author_id', roles: ['public'] },
+  { table: 'sections', operation: 'SELECT', policy: 'public read published',    condition: "piece.status = 'published'", roles: ['authenticated'] },
 
-  { table: 'piece_versions', operation: 'ALL',    policy: 'owner full access',     condition: 'auth.uid() = author_id' },
-  { table: 'piece_versions', operation: 'SELECT', policy: 'public read published', condition: "piece.status = 'published'" },
+  { table: 'piece_versions', operation: 'ALL',    policy: 'owner full access',     condition: 'auth.uid() = author_id', roles: ['public'] },
+  { table: 'piece_versions', operation: 'SELECT', policy: 'public read published', condition: "piece.status = 'published'", roles: ['authenticated'] },
 
-  { table: 'piece_lineage', operation: 'ALL',    policy: 'owner full access',  condition: 'auth.uid() = piece.author_id' },
-  { table: 'piece_lineage', operation: 'SELECT', policy: 'public read',        condition: 'true' },
+  { table: 'piece_lineage', operation: 'ALL',    policy: 'owner full access',  condition: 'auth.uid() = piece.author_id', roles: ['public'] },
+  { table: 'piece_lineage', operation: 'SELECT', policy: 'public read',        condition: 'true', roles: ['authenticated'] },
 
-  { table: 'piece_metadata', operation: 'ALL',    policy: 'owner full access',     condition: 'auth.uid() = piece.author_id' },
-  { table: 'piece_metadata', operation: 'SELECT', policy: 'public read published', condition: "piece.status = 'published'" },
+  { table: 'piece_metadata', operation: 'ALL',    policy: 'owner full access',     condition: 'auth.uid() = piece.author_id', roles: ['public'] },
+  { table: 'piece_metadata', operation: 'SELECT', policy: 'public read published', condition: "piece.status = 'published'", roles: ['authenticated'] },
 ];
