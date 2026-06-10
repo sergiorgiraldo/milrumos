@@ -26,13 +26,13 @@
     "sections": "Seções",
     "words": "Palavras",
     "actions": "Ações",
-    "confirmDelete": "Deletar?",
-    "confirmYes": "Sim, deletar",
+    "confirmDelete": "Apagar?",
+    "confirmYes": "Sim, apagar",
     "cancel": "Cancelar",
     "edit": "Editar",
     "publish": "Publicar",
     "unpublish": "Despublicar",
-    "delete": "Deletar"
+    "delete": "Apagar"
   },
   "status": {
     "published": "Publicado",
