@@ -134,6 +134,12 @@ export async function savePiece(
     { onConflict: 'piece_id,ordinal' }
   );
 
+  await supabase
+    .from('sections')
+    .delete()
+    .eq('piece_id', pieceId)
+    .gt('ordinal', sections.length);
+
   const snapshot = buildSnapshot((piece as { title: string }).title, sections);
 
   const { data: version, error: vErr } = await supabase

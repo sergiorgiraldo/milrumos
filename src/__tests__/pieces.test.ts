@@ -17,7 +17,7 @@ function makeChain(result: { data: unknown; error: unknown }) {
   };
   for (const m of [
     'select', 'insert', 'update', 'delete', 'upsert',
-    'eq', 'neq', 'match', 'order', 'limit', 'is', 'in',
+    'eq', 'neq', 'match', 'order', 'limit', 'is', 'in', 'gt',
   ]) {
     chain[m] = jest.fn().mockReturnValue(chain);
   }
@@ -192,6 +192,7 @@ describe('savePiece', () => {
     return makeClient(
       makeChain({ data: { id: PIECE_ID, author_id: AUTHOR_ID, title: 'Story' }, error: null }),
       makeChain({ data: [], error: null }),                          // sections upsert
+      makeChain({ data: null, error: null }),                        // sections delete (orphans)
       makeChain({ data: { version_number: versionNumber }, error: null }),  // piece_versions insert
       makeChain({ data: null, error: null })                         // pieces touch updated_at
     );
@@ -242,12 +243,32 @@ describe('savePiece', () => {
     const supabase = makeClient(
       makeChain({ data: { id: PIECE_ID, author_id: AUTHOR_ID, title: 'Story' }, error: null }),
       makeChain({ data: [], error: null }),
+      makeChain({ data: null, error: null }),
       makeChain({ data: null, error: { message: 'db error' } })
     );
 
     const result = await savePiece(supabase, PIECE_ID, AUTHOR_ID, []);
 
     expect(result.error?.code).toBe('DB_ERROR');
+  });
+
+  it('deletes leftover section rows beyond the new section count', async () => {
+    const sectionsChain = makeChain({ data: [], error: null });
+    const supabase = makeClient(
+      makeChain({ data: { id: PIECE_ID, author_id: AUTHOR_ID, title: 'Story' }, error: null }),
+      sectionsChain,
+      sectionsChain,
+      makeChain({ data: { version_number: 2 }, error: null }),
+      makeChain({ data: null, error: null })
+    );
+
+    await savePiece(supabase, PIECE_ID, AUTHOR_ID, [
+      { ordinal: 1, title: 'Chapter 1', content: 'kept' },
+    ]);
+
+    expect(sectionsChain.delete).toHaveBeenCalled();
+    expect(sectionsChain.eq).toHaveBeenCalledWith('piece_id', PIECE_ID);
+    expect(sectionsChain.gt).toHaveBeenCalledWith('ordinal', 1);
   });
 });
 
