@@ -38,16 +38,25 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('returnTo', pathname);
-    return NextResponse.redirect(url);
+    return noStore(NextResponse.redirect(url));
   }
 
   if (user && pathname === '/login') {
     const url = request.nextUrl.clone();
     url.pathname = '/';
-    return NextResponse.redirect(url);
+    return noStore(NextResponse.redirect(url));
   }
 
-  return supabaseResponse;
+  return noStore(supabaseResponse);
+}
+
+// Every page is session-scoped (CLAUDE.md: no page accessible without
+// login), so disable caching everywhere. Without this, the browser's
+// back/forward cache (bfcache) can restore a previously rendered page
+// (e.g. another user's "My Pieces" dashboard) after an account switch.
+function noStore(response: NextResponse): NextResponse {
+  response.headers.set('Cache-Control', 'no-store, must-revalidate');
+  return response;
 }
 
 export const config = {

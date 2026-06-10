@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import NavBar from '@/components/NavBar';
 import PieceCard from '@/components/PieceCard';
+import LogoutButton from '../LogoutButton';
 import { GENRES } from '@/lib/schema';
 import { getServerT } from '@/lib/i18n';
 import {
@@ -40,7 +41,16 @@ export default async function ExplorePage({ searchParams }: Props) {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const result = await listExplorePieces(supabase, { genre, sort, page });
+  const [{ data: profile }, result] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('display_name, avatar_url, username')
+      .eq('id', user.id)
+      .single(),
+    listExplorePieces(supabase, { genre, sort, page }),
+  ]);
+
+  const displayName = profile?.display_name ?? profile?.username ?? user.email;
   const pieces = result.data ?? [];
   const hasMore = pieces.length === EXPLORE_PAGE_SIZE;
 
@@ -51,7 +61,21 @@ export default async function ExplorePage({ searchParams }: Props) {
 
   return (
     <div className="min-h-screen bg-pale-slate-50">
-      <NavBar />
+      <NavBar
+        rightContent={
+          <>
+            {profile?.avatar_url && (
+              <img
+                src={profile.avatar_url}
+                alt={displayName ?? ''}
+                className="w-8 h-8 rounded-full border border-pale-slate-200"
+              />
+            )}
+            <span className="text-pale-slate-700 text-sm font-medium">{displayName}</span>
+            <LogoutButton />
+          </>
+        }
+      />
 
       <div className="max-w-5xl mx-auto px-4 py-8">
         <header className="mb-6">
