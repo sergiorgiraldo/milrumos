@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
-import { marked } from 'marked';
+import { renderMarkdown } from '@/lib/markdown';
 import type { Section, PieceMetadata, Profile } from '@/lib/schema';
 import { canFork } from '@/lib/fork';
 import { getServerT } from '@/lib/i18n';
@@ -58,7 +58,7 @@ export default async function PieceDetailPage({ params }: Props) {
     sortedSections.map(async (s: Section) => ({
       id: s.id,
       title: s.title,
-      html: await marked.parse(s.content ?? ''),
+      html: await renderMarkdown(s.content ?? ''),
     }))
   );
 
