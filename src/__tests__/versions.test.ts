@@ -13,7 +13,7 @@ function makeChain(result: { data: unknown; error: unknown }) {
   };
   for (const m of [
     'select', 'insert', 'update', 'delete', 'upsert',
-    'eq', 'neq', 'match', 'order', 'limit', 'is', 'in',
+    'eq', 'neq', 'match', 'order', 'limit', 'is', 'in', 'gt',
   ]) {
     chain[m] = jest.fn().mockReturnValue(chain);
   }
@@ -146,6 +146,8 @@ describe('restoreVersion', () => {
       // savePiece: pieces select (id, author_id, title)
       makeChain({ data: { id: PIECE_ID, author_id: AUTHOR_ID, title: 'My Story' }, error: null }),
       // savePiece: sections upsert
+      makeChain({ data: null, error: null }),
+      // savePiece: sections delete (orphans)
       makeChain({ data: null, error: null }),
       // savePiece: piece_versions insert
       makeChain({ data: { version_number: 3 }, error: null }),
