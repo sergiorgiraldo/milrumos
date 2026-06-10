@@ -7,6 +7,7 @@ import { getServerT } from '@/lib/i18n';
 import ForkPanel from '@/components/ForkPanel';
 import LineageBanner from '@/components/LineageBanner';
 import NavBar from '@/components/NavBar';
+import UserMenu from '@/components/UserMenu';
 import { getLineage } from '@/lib/lineage';
 
 type Props = { params: Promise<{ id: string }> };
@@ -32,7 +33,7 @@ export default async function PieceDetailPage({ params }: Props) {
 
   if (p.status === 'draft' && p.author_id !== user.id) notFound();
 
-  const [{ data: metadata }, { data: authorProfile }, lineage] = await Promise.all([
+  const [{ data: metadata }, { data: authorProfile }, { data: viewerProfile }, lineage] = await Promise.all([
     supabase
       .from('piece_metadata')
       .select('genre, tags, idea_summary')
@@ -43,12 +44,19 @@ export default async function PieceDetailPage({ params }: Props) {
       .select('display_name, username, avatar_url')
       .eq('id', p.author_id)
       .single(),
+    supabase
+      .from('profiles')
+      .select('display_name, username, avatar_url')
+      .eq('id', user.id)
+      .single(),
     getLineage(supabase, id),
   ]);
 
   const meta = metadata as Pick<PieceMetadata, 'genre' | 'tags' | 'idea_summary'> | null;
   const author = authorProfile as Pick<Profile, 'display_name' | 'username' | 'avatar_url'> | null;
   const authorName = author?.display_name ?? author?.username ?? t('pieceDetail.unknownAuthor');
+  const viewer = viewerProfile as Pick<Profile, 'display_name' | 'username' | 'avatar_url'> | null;
+  const viewerName = viewer?.display_name ?? viewer?.username ?? user.email ?? '';
 
   const sortedSections = [...(p.sections ?? [])].sort(
     (a: Section, b: Section) => a.ordinal - b.ordinal
@@ -77,14 +85,17 @@ export default async function PieceDetailPage({ params }: Props) {
     <div className="min-h-screen bg-pale-slate-50">
       <NavBar
         rightContent={
-          isOwner ? (
-            <a
-              href={`/pieces/${id}/edit`}
-              className="px-4 py-1.5 rounded-lg bg-pale-slate-100 text-pale-slate-700 text-sm font-medium hover:bg-pale-slate-200 transition-colors"
-            >
-              {t('pieceDetail.edit')}
-            </a>
-          ) : undefined
+          <>
+            {isOwner && (
+              <a
+                href={`/pieces/${id}/edit`}
+                className="px-4 py-1.5 rounded-lg bg-pale-slate-100 text-pale-slate-700 text-sm font-medium hover:bg-pale-slate-200 transition-colors"
+              >
+                {t('pieceDetail.edit')}
+              </a>
+            )}
+            <UserMenu displayName={viewerName} avatarUrl={viewer?.avatar_url} />
+          </>
         }
       />
 

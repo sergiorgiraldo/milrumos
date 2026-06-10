@@ -3,10 +3,10 @@ import { redirect } from 'next/navigation';
 import { listAuthorPieces } from '@/lib/pieces';
 import { upsertProfile } from '@/lib/auth';
 import { getServerT } from '@/lib/i18n';
-import LogoutButton from './LogoutButton';
 import NewPieceButton from '@/components/NewPieceButton';
 import DashboardTable from '@/components/DashboardTable';
 import NavBar from '@/components/NavBar';
+import UserMenu from '@/components/UserMenu';
 
 // Always render fresh per-request: this page reads the current session and
 // must never serve one user's "My Pieces" list to a different logged-in user.
@@ -37,19 +37,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-pale-slate-50">
       <NavBar
-        rightContent={
-          <>
-            {profile?.avatar_url && (
-              <img
-                src={profile.avatar_url}
-                alt={displayName ?? ''}
-                className="w-8 h-8 rounded-full border border-pale-slate-200"
-              />
-            )}
-            <span className="text-pale-slate-700 text-sm font-medium">{displayName}</span>
-            <LogoutButton />
-          </>
-        }
+        rightContent={<UserMenu displayName={displayName ?? ''} avatarUrl={profile?.avatar_url} />}
       />
 
       <main className="max-w-5xl mx-auto px-6 py-8">

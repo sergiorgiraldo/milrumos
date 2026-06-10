@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import SectionEditor from './SectionEditor';
 import MetadataPanel from './MetadataPanel';
 import VersionHistoryPanel from './VersionHistoryPanel';
+import UserMenu from './UserMenu';
 import { useTranslation } from '@/contexts/LanguageContext';
 import {
   SectionData,
@@ -30,6 +31,8 @@ interface Props {
   initialStatus: 'draft' | 'published';
   inheritedCount?: number;
   initialMetadata?: InitialMetadata;
+  userDisplayName: string;
+  userAvatarUrl?: string | null;
 }
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
@@ -43,6 +46,8 @@ export default function PieceEditor({
   initialStatus,
   inheritedCount = 0,
   initialMetadata,
+  userDisplayName,
+  userAvatarUrl,
 }: Props) {
   const { t } = useTranslation();
   const [title, setTitle] = useState(initialTitle);
@@ -324,6 +329,10 @@ export default function PieceEditor({
           >
             {publishing ? '…' : status === 'draft' ? t('editor.publish') : t('editor.unpublish')}
           </button>
+
+          <span className="w-px h-6 bg-pale-slate-200" aria-hidden="true" />
+
+          <UserMenu displayName={userDisplayName} avatarUrl={userAvatarUrl} />
         </div>
       </header>
 

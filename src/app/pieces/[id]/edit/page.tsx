@@ -15,11 +15,18 @@ export default async function EditPage({ params }: Props) {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const { data: piece, error } = await supabase
-    .from('pieces')
-    .select('*, sections(*)')
-    .eq('id', id)
-    .single();
+  const [{ data: piece, error }, { data: profile }] = await Promise.all([
+    supabase
+      .from('pieces')
+      .select('*, sections(*)')
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('profiles')
+      .select('display_name, avatar_url, username')
+      .eq('id', user.id)
+      .single(),
+  ]);
 
   if (error || !piece) notFound();
 
@@ -67,6 +74,8 @@ export default async function EditPage({ params }: Props) {
       }
     : { genre: null, tags: [], idea_summary: null };
 
+  const userDisplayName = profile?.display_name ?? profile?.username ?? user.email ?? '';
+
   return (
     <PieceEditor
       pieceId={id}
@@ -75,6 +84,8 @@ export default async function EditPage({ params }: Props) {
       initialStatus={p.status}
       inheritedCount={inheritedCount}
       initialMetadata={initialMetadata}
+      userDisplayName={userDisplayName}
+      userAvatarUrl={profile?.avatar_url}
     />
   );
 }
