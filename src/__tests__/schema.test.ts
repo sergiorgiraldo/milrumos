@@ -3,6 +3,7 @@ import path from 'path';
 import { TABLES, RLS_RULES, PIECE_STATUSES } from '@/lib/schema';
 
 const MIGRATION_FILE = path.join(process.cwd(), 'supabase', 'migrations', '0001_initial_schema.sql');
+const SECURE_MIGRATION_FILE = path.join(process.cwd(), 'supabase', 'migrations', '0006_secure_supabase.sql');
 
 describe('migration file', () => {
   let sql: string;
@@ -150,6 +151,68 @@ describe('RLS rule registry', () => {
       const rule = RLS_RULES.find((r) => r.table === table && r.operation === 'ALL');
       expect(rule?.condition).toContain('piece.author_id');
     }
+  });
+
+  it('every "public read" SELECT policy is restricted to authenticated role', () => {
+    const publicReadRules = RLS_RULES.filter((r) => r.policy.startsWith('public read'));
+    expect(publicReadRules.length).toBeGreaterThan(0);
+    for (const rule of publicReadRules) {
+      expect(rule.roles).toEqual(['authenticated']);
+    }
+  });
+
+  it('every owner "ALL" policy applies to public (condition-restricted)', () => {
+    const ownerRules = RLS_RULES.filter((r) => r.policy === 'owner full access');
+    expect(ownerRules.length).toBeGreaterThan(0);
+    for (const rule of ownerRules) {
+      expect(rule.roles).toEqual(['public']);
+    }
+  });
+});
+
+describe('0006_secure_supabase migration', () => {
+  let sql: string;
+
+  beforeAll(() => {
+    sql = fs.readFileSync(SECURE_MIGRATION_FILE, 'utf-8');
+  });
+
+  it('exists', () => {
+    expect(fs.existsSync(SECURE_MIGRATION_FILE)).toBe(true);
+  });
+
+  it.each([
+    'profiles: public read',
+    'pieces: public read published',
+    'sections: public read published',
+    'piece_versions: public read published',
+    'piece_lineage: public read',
+    'piece_metadata: public read published',
+  ])('recreates "%s" policy scoped to authenticated', (policyName) => {
+    const block = sql.match(
+      new RegExp(`create policy "${policyName}"[\\s\\S]*?;`)
+    )?.[0] ?? '';
+    expect(block).toMatch(/to authenticated/);
+  });
+
+  it('restricts EXECUTE on search_pieces and explore_pieces to authenticated', () => {
+    expect(sql).toMatch(/revoke execute on function public\.search_pieces\(text, text\) from public/);
+    expect(sql).toMatch(/grant execute on function public\.search_pieces\(text, text\) to authenticated/);
+    expect(sql).toMatch(
+      /revoke execute on function public\.explore_pieces\(text, text, integer, integer\) from public/
+    );
+    expect(sql).toMatch(
+      /grant execute on function public\.explore_pieces\(text, text, integer, integer\) to authenticated/
+    );
+  });
+
+  it('pins an empty search_path on all four functions', () => {
+    expect(sql).toMatch(/alter function public\.handle_new_user\(\) set search_path = ''/);
+    expect(sql).toMatch(/alter function public\.next_piece_version\(\) set search_path = ''/);
+    expect(sql).toMatch(/alter function public\.search_pieces\(text, text\) set search_path = ''/);
+    expect(sql).toMatch(
+      /alter function public\.explore_pieces\(text, text, integer, integer\) set search_path = ''/
+    );
   });
 });
 
