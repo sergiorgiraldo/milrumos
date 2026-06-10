@@ -24,6 +24,11 @@ export async function middleware(request: NextRequest) {
           );
         },
       },
+      global: {
+        // getUser() here decides who the request belongs to — never let it
+        // be served from a fetch cache keyed without the auth cookie.
+        fetch: (input, init) => fetch(input, { ...init, cache: 'no-store' }),
+      },
     }
   );
 

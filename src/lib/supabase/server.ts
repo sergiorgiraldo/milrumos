@@ -22,6 +22,13 @@ export async function createClient() {
           }
         },
       },
+      global: {
+        // auth.getUser()/REST responses are per-session. Without this,
+        // Next.js's fetch cache (and Turbopack's dev filesystem cache) can
+        // key a Supabase response by URL alone, ignoring the Authorization
+        // cookie, and serve one user's session/pieces to the next request.
+        fetch: (input, init) => fetch(input, { ...init, cache: 'no-store' }),
+      },
     }
   );
 }
