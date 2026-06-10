@@ -24,7 +24,11 @@ export async function signInWithGoogle(supabase: SupabaseClient, returnTo?: stri
   const redirectTo = returnTo ? `${base}?next=${encodeURIComponent(returnTo)}` : base;
   return supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo },
+    // Without this, a browser that's still signed into Google silently
+    // re-authenticates as that same account after our app's sign-out,
+    // making "switch account" look like a stale-session bug. Forcing the
+    // chooser lets the user actually pick a different Google account.
+    options: { redirectTo, queryParams: { prompt: 'select_account' } },
   });
 }
 

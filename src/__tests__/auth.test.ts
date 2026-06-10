@@ -98,6 +98,14 @@ describe('signInWithGoogle', () => {
     expect(call.provider).toBe('google');
     expect(call.options.redirectTo).toContain('/auth/callback');
   });
+
+  it('forces the Google account chooser so a switched-out user can pick a different account', async () => {
+    const client = makeSupabase();
+    await signInWithGoogle(client);
+
+    const call = (client as ReturnType<typeof makeSupabase>)._signInWithOAuth.mock.calls[0][0];
+    expect(call.options.queryParams).toEqual({ prompt: 'select_account' });
+  });
 });
 
 describe('signInWithGitHub', () => {
