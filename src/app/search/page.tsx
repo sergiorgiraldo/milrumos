@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { searchPieces } from '@/lib/search';
 import NavBar from '@/components/NavBar';
+import UserMenu from '@/components/UserMenu';
 import { GENRES } from '@/lib/schema';
 import { getServerT } from '@/lib/i18n';
 
@@ -16,13 +17,25 @@ export default async function SearchPage({ searchParams }: Props) {
   } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 
-  const result = q.trim() ? await searchPieces(supabase, q, genre ?? null) : null;
+  const [{ data: profile }, result] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('display_name, avatar_url, username')
+      .eq('id', user.id)
+      .single(),
+    q.trim() ? searchPieces(supabase, q, genre ?? null) : Promise.resolve(null),
+  ]);
+
+  const displayName = profile?.display_name ?? profile?.username ?? user.email;
   const results = result?.data ?? [];
   const hasQuery = q.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-pale-slate-50">
-      <NavBar searchDefaultValue={q} />
+      <NavBar
+        searchDefaultValue={q}
+        rightContent={<UserMenu displayName={displayName ?? ''} avatarUrl={profile?.avatar_url} />}
+      />
 
       <div className="max-w-5xl mx-auto px-4 py-8 flex gap-6">
         {/* Genre filter sidebar */}

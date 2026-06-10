@@ -61,8 +61,8 @@ export default function ForkPanel({ sections, pieceId, showForkButtons }: Props)
         return (
           <section
             key={section.id}
-            className={`rounded-xl transition-colors duration-150 ${
-              isHighlighted ? 'bg-sky-blue-50 ring-1 ring-sky-blue-200 px-4 py-2 -mx-4' : ''
+            className={`rounded-xl px-4 py-2 -mx-4 transition-colors duration-150 ${
+              isHighlighted ? 'bg-sky-blue-50 ring-1 ring-sky-blue-200' : ''
             }`}
           >
             <div className="flex items-start justify-between gap-4">
