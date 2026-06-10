@@ -63,4 +63,16 @@ describe('middleware', () => {
     const res = await middleware(makeRequest('/dashboard'));
     expect(res.headers.get('location')).toBeNull();
   });
+
+  it('disables caching on protected pages so a logged-out/switched user never sees a stale page via bfcache', async () => {
+    mockAuth({ id: 'user-1' });
+    const res = await middleware(makeRequest('/dashboard'));
+    expect(res.headers.get('Cache-Control')).toBe('no-store, must-revalidate');
+  });
+
+  it('disables caching on the login redirect', async () => {
+    mockAuth(null);
+    const res = await middleware(makeRequest('/dashboard'));
+    expect(res.headers.get('Cache-Control')).toBe('no-store, must-revalidate');
+  });
 });
